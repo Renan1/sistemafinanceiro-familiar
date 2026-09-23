@@ -114,11 +114,14 @@ erDiagram
 ├─ css/
 ├─ js/
 │  ├─ config.js         gerado no deploy (NÃO vai para o Git)
-│  ├─ db.js             Supabase
-│  ├─ offline.js        IndexedDB + fila
+│  ├─ app.js            inicialização e navegação
+│  ├─ db.js             Supabase (único ponto de contato)
+│  ├─ offline.js        IndexedDB: fila + cache
+│  ├─ sync.js           envio da fila
 │  ├─ parcelas.js       calcularParcelas()
-│  ├─ regras.js         motor de regras
-│  ├─ dashboard.js · mapa.js · log.js
+│  ├─ estado.js · geo.js · log.js · formato.js · validacao.js
+│  ├─ regras.js         motor de regras (Fase 5)
+│  ├─ dashboard.js · mapa.js  (Fase 4)
 │  └─ ui/               telas
 ├─ sql/                 scripts do banco (rodar no Supabase, em ordem)
 ├─ tests/               testes (SQL e JS)

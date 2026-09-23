@@ -149,11 +149,11 @@ Sistema web (PWA) de controle financeiro familiar. Cada membro registra os **pr�
 
 | Código | Critério | Como é verificado |
 |---|---|---|
-| CA-01 | Gasto registrado em modo avião sincroniza sozinho ao reabrir com internet, sem duplicar. | Teste manual (Fase 2) + idempotência testada no banco ✅ |
-| CA-02 | R$ 1.000,00 em 3x = 333,34 + 333,33 + 333,33 nas faturas corretas. | Teste do banco ✅ + testes JS (Fase 2) |
+| CA-01 | Gasto registrado em modo avião sincroniza sozinho ao reabrir com internet, sem duplicar. | Teste do banco ✅ + teste no navegador ✅ + roteiro no celular (docs/fase2-publicacao.md) |
+| CA-02 | R$ 1.000,00 em 3x = 333,34 + 333,33 + 333,33 nas faturas corretas. | Teste do banco ✅ + 31 testes JS ✅ + teste no navegador ✅ |
 | CA-03 | Camilla vê o dashboard familiar com os gastos do Renan, mas não consegue editá-los. | Teste do banco ✅ |
-| CA-04 | Negar localização não impede nenhum registro. | Teste manual (Fase 2) |
-| CA-05 | App abre e registra sem internet após o primeiro acesso. | Teste manual (Fase 2) |
+| CA-04 | Negar localização não impede nenhum registro. | Teste no navegador ✅ + roteiro no celular |
+| CA-05 | App abre e registra sem internet após o primeiro acesso. | Teste no navegador ✅ + roteiro no celular |
 | CA-06 | Quem abre o link sem login não vê nenhum dado. | Teste do banco ✅ |
 
 ## 12. Fases de entrega

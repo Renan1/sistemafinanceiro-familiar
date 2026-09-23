@@ -15,8 +15,8 @@ PWA (app que roda no navegador e é instalado na Tela de Início do celular) + S
 | Fase | Conteúdo | Status |
 |---|---|---|
 | 1 | Banco de dados (schema, RLS, seeds, views, auditoria) + Supabase | ✅ v0.1.0 |
-| 2 | App: login, novo gasto, novo ganho, parcelas, offline, localização, publicação | ⏳ próxima |
-| 3 | Lançamentos, recorrências, cartões, categorias, orçamentos | — |
+| 2 | App: login, novo gasto, novo ganho, parcelas, offline, localização, publicação | ✅ v0.2.0 |
+| 3 | Lançamentos, recorrências, cartões, categorias, orçamentos | ⏳ próxima |
 | 4 | Dashboard com conciliação, gráficos e mapa | — |
 | 5 | Saúde financeira (regras, tarefas), exportação, Skill do Claude | — |
 
@@ -29,6 +29,7 @@ PWA (app que roda no navegador e é instalado na Tela de Início do celular) + S
 | [docs/ARQUITETURA.md](docs/ARQUITETURA.md) | Diagramas, tabelas, fluxo de um gasto, estrutura de pastas |
 | [docs/ambiente-windows.md](docs/ambiente-windows.md) | Preparar o PC (Git, VS Code, GitHub CLI) e baixar o projeto |
 | [docs/fase1-supabase.md](docs/fase1-supabase.md) | Passo a passo para criar e configurar o Supabase |
+| [docs/fase2-publicacao.md](docs/fase2-publicacao.md) | Publicar no GitHub Pages, subdomínio no Cloudflare, instalar no celular, roteiro de testes |
 | [docs/CONVENCOES.md](docs/CONVENCOES.md) | Padrão de commits, versões, branches e mudanças no banco |
 | [CHANGELOG.md](CHANGELOG.md) | Histórico de versões |
 
@@ -36,18 +37,43 @@ PWA (app que roda no navegador e é instalado na Tela de Início do celular) + S
 
 1. Prepare o PC → [docs/ambiente-windows.md](docs/ambiente-windows.md)
 2. Configure o Supabase → [docs/fase1-supabase.md](docs/fase1-supabase.md)
-3. Publicação no GitHub Pages, subdomínio no Cloudflare e instalação no celular → *entram neste README na Fase 2.*
+3. Publique e instale no celular → [docs/fase2-publicacao.md](docs/fase2-publicacao.md)
+   - **GitHub Pages:** Settings → Pages → Source: *GitHub Actions*. O workflow `Publicar app` roda a cada push na `main`.
+   - **Cloudflare:** registro `CNAME` `financaspessoais` → `renan1.github.io` (nuvem cinza) + domínio em Settings → Pages + *Enforce HTTPS*.
+   - **iPhone:** Safari → Compartilhar → *Adicionar à Tela de Início* → abrir pelo ícone e fazer login.
+
+### Onde ficam a URL e a chave do Supabase?
+
+Em **Secrets do GitHub** (`SUPABASE_URL`, `SUPABASE_ANON_KEY`). Na publicação, o GitHub Actions gera `js/config.js` com eles. Para testar no PC, copie `js/config.exemplo.js` para `js/config.js` (esse arquivo nunca vai para o Git).
+
+### Comandos (PowerShell)
+
+```powershell
+npm test        # testes das parcelas, formatação e validação
+npm run dev     # app em http://localhost:3000 (precisa do js/config.js)
+```
 
 ## Estrutura
 
 ```
+index.html, manifest.json, sw.js   casca do app (PWA) e Service Worker
+css/app.css           visual (claro/escuro automático, safe area do iPhone)
+js/                   código do app
+  app.js                inicialização e navegação
+  db.js                 comunicação com o Supabase (único ponto)
+  offline.js            IndexedDB: fila de pendentes + cache
+  sync.js               envio da fila (abrir app, voltar sinal, voltar à tela)
+  parcelas.js           calcularParcelas() — regra do cartão
+  geo.js · log.js · formato.js · validacao.js · estado.js
+  ui/                   telas (login, novo gasto, novo ganho, lançamentos, painel, mais)
+icons/                ícones do app
 sql/                  scripts do banco — rodar no Supabase, em ordem
   001_schema.sql        estrutura completa + segurança
   002_bootstrap_familia.sql  cria a família e liga os usuários
   003_verificacao.sql   confere se a segurança ficou OK
-tests/sql/            testes automáticos do banco (rodam no GitHub Actions)
+tests/                testes automáticos (banco e JS — rodam no GitHub Actions)
 docs/                 documentação
-.github/workflows/    testes a cada push + "manter Supabase ativo"
+.github/workflows/    testes, publicação no Pages e "manter Supabase ativo"
 ```
 
 ## Segurança em uma frase

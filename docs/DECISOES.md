@@ -80,3 +80,26 @@ Cada decisão importante fica registrada aqui com **o que** foi decidido e **por
 ### D-22 — Testes do banco no GitHub Actions
 **Decisão:** `tests/sql/` simula o Supabase num Postgres limpo e roda testes de RLS e regras a cada push.
 **Por quê:** garante que uma mudança futura no SQL não abra um buraco de segurança sem ninguém perceber. Não exige nada instalado no Windows.
+
+### D-23 — Publicação pelo GitHub Actions (não pela branch)
+**Decisão:** o workflow `publicar.yml` monta a pasta do site, gera `js/config.js` com os Secrets e publica no Pages. Só os arquivos do app vão para o ar (`sql/`, `docs/`, `tests/` não).
+**Por quê:** é a única forma de publicar sem colocar a URL/chave no repositório (D-07) e de rodar os testes antes — teste falhou, não publica.
+
+### D-24 — Bibliotecas de CDN com versão fixa
+**Decisão:** supabase-js carregado de `cdn.jsdelivr.net` com versão exata (2.117.1), guardado em cache pelo Service Worker.
+**Por quê:** uma versão nova da biblioteca não muda o app sem aviso; atualizar é uma decisão consciente (um commit).
+
+### D-25 — Abrir o app sem depender da internet
+**Decisão:** se há perfil guardado no aparelho e sessão guardada, o app abre direto na tela de gasto, mesmo que o acesso (token) tenha expirado. A renovação acontece em segundo plano quando houver sinal. A tela de login só aparece se não houver sessão guardada ou se o Supabase encerrar a sessão.
+**Por quê:** o token do Supabase dura 1 hora. Sem isso, abrir o app no mercado sem sinal, horas depois, cairia no login e impediria o registro (CA-05).
+
+### D-26 — A fila é por usuário
+**Decisão:** cada item da fila guarda o `user_id` de quem lançou; só é enviado quando esse mesmo usuário estiver logado. Sair da conta apaga o cache, mas **não** a fila.
+**Por quê:** se outra pessoa entrasse no mesmo aparelho, os lançamentos pendentes não podem ser enviados em nome dela.
+
+### D-27 — Recusa do servidor não fica em loop
+**Decisão:** falhas de rede/servidor/sessão mantêm o item "pendente" (tenta de novo depois). Recusa definitiva (dado inválido, sem permissão) marca o item como "erro", visível em Lançamentos com "tentar de novo" e "descartar".
+**Por quê:** um item inválido tentando para sempre travaria a fila e gastaria bateria.
+
+### D-28 — Service Worker: cache primeiro, versão por commit
+**Decisão:** arquivos do app e bibliotecas são servidos do cache (rápido e offline). Cada publicação troca o nome do cache pelo hash do commit, o que faz o navegador baixar a versão nova e o app oferecer "toque para atualizar" — nunca recarrega sozinho no meio de um lançamento. No PC (versão não publicada) usa rede primeiro, para ver alterações na hora.

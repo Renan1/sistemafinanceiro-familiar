@@ -2,6 +2,26 @@
 
 Todas as mudanças relevantes do projeto. Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/), versões em [SemVer](https://semver.org/lang/pt-BR/).
 
+## [0.2.0] — 2026-09-23 — Fase 2: App (PWA)
+
+### Adicionado
+- PWA instalável (manifest, ícones, meta tags do iPhone, tema claro/escuro, safe area).
+- **Login** por e-mail e senha, "esqueci minha senha" e tela de nova senha com a política de senha.
+- **Novo gasto** (tela inicial): teclado em centavos, formas de pagamento (lembra a última), cartão e parcelas 1x–24x com prévia ("3x de R$ 333,33 — 1ª em Out/26"), categorias mais usadas primeiro, Fixo/Variável, data, descrição, nome do local.
+- **Novo ganho**: valor, tipo de ganho, data, Fixo/Variável (salário/pró-labore/aluguel já sugerem "Fixo").
+- `js/parcelas.js`: `calcularParcelas()` — fechamento, vencimento, virada de ano, meses curtos, arredondamento na 1ª parcela.
+- **Offline**: todo lançamento vai primeiro para o IndexedDB (id gerado no aparelho) e é enviado ao abrir o app, ao voltar a internet, ao voltar para a tela, após salvar e pelo indicador. Sessão expirada não perde a fila. Recusas do servidor ficam marcadas para "tentar de novo" ou "descartar".
+- Service Worker: app abre sem internet; atualização com aviso "Nova versão disponível".
+- **Localização** capturada ao abrir a tela (5 s, maximumAge 60 s); negar não impede nada.
+- **Lançamentos** (do mês + pendentes), **Painel** com a conciliação do mês por visão (Eu / Camilla / Família), **Cartões** (cadastrar, excluir/arquivar), **Diagnóstico** com logs exportáveis.
+- `js/log.js`: logs com níveis, guardados no aparelho, sem dados sensíveis.
+- Workflow **Publicar app** (GitHub Pages): testes → gera `config.js` dos Secrets → carimba versão no Service Worker → publica. Arquivo `CNAME`.
+- 43 testes JS (`npm test`) no GitHub Actions; teste ponta a ponta no navegador validou CA-01, CA-02, CA-04 e CA-05.
+- `docs/fase2-publicacao.md`: Pages, Cloudflare, instalação no celular e roteiro de testes.
+
+### Corrigido
+- Workflow de ping: normaliza a `SUPABASE_URL` (barra final / `/rest/v1`) e mostra a resposta do Supabase.
+
 ## [0.1.0] — 2026-09-23 — Fase 1: Banco de dados
 
 ### Adicionado
