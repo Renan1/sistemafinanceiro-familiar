@@ -1,0 +1,90 @@
+# =============================================================================
+# Publicar no GitHub Pages
+# -----------------------------------------------------------------------------
+# A cada push na branch main (ou pelo botão "Run workflow"):
+#   1. roda os testes JS (se falhar, NÃO publica);
+#   2. gera js/config.js a partir dos Secrets (nenhuma chave fica no Git — D-07);
+#   3. carimba a versão no sw.js (faz os celulares baixarem a versão nova);
+#   4. publica só os arquivos do app (sql/, docs/, tests/ ficam de fora).
+#
+# Pré-requisito (uma vez): Settings → Pages → Build and deployment →
+# Source: "GitHub Actions". Passo a passo em docs/fase2-publicacao.md.
+# =============================================================================
+name: Publicar app
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Uma publicação por vez; a mais nova cancela a anterior que ainda não terminou.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  montar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Testes JS (parcelas, formatação, validação)
+        run: npm test
+
+      - name: Montar a pasta do site
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "::error::Configure os Secrets SUPABASE_URL e SUPABASE_ANON_KEY (docs/fase1-supabase.md, passo 8)."
+            exit 1
+          fi
+
+          mkdir -p _site
+          cp -r index.html manifest.json sw.js css js icons _site/
+          [ -f CNAME ] && cp CNAME _site/
+          touch _site/.nojekyll
+          rm -f _site/js/config.exemplo.js
+
+          # URL normalizada (mesma regra do workflow de ping)
+          URL=$(printf '%s' "$SUPABASE_URL" | tr -d '[:space:]'); URL=${URL%/}; URL=${URL%/rest/v1}; URL=${URL%/}
+          CHAVE=$(printf '%s' "$SUPABASE_ANON_KEY" | tr -d '[:space:]')
+          BUILD="${GITHUB_SHA::7}"
+
+          # Gera o config.js com node (escapa aspas com segurança via JSON).
+          URL="$URL" CHAVE="$CHAVE" BUILD="$BUILD" node -e '
+            const c = { supabaseUrl: process.env.URL, supabaseAnonKey: process.env.CHAVE, build: process.env.BUILD };
+            require("fs").writeFileSync("_site/js/config.js",
+              "// Gerado automaticamente pelo GitHub Actions. Não edite.\nexport const CONFIG = " + JSON.stringify(c, null, 2) + ";\n");
+          '
+
+          # Versão no Service Worker → celulares recebem a atualização.
+          sed -i "s/__VERSAO__/${BUILD}/" _site/sw.js
+          echo "Publicando build ${BUILD}"
+          ls -R _site | head -50
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  publicar:
+    needs: montar
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4
