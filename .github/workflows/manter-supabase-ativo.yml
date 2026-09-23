@@ -34,8 +34,28 @@ jobs:
             echo "::warning::Secrets SUPABASE_URL / SUPABASE_ANON_KEY ainda não configurados."
             exit 0
           fi
-          resposta=$(curl -fsS -X POST "${SUPABASE_URL%/}/rest/v1/rpc/ping" \
-            -H "apikey: $SUPABASE_ANON_KEY" \
+
+          # Normaliza a URL: tira espaços, barra final e um "/rest/v1" colado por engano.
+          URL=$(printf '%s' "$SUPABASE_URL" | tr -d '[:space:]')
+          URL=${URL%/}; URL=${URL%/rest/v1}; URL=${URL%/}
+
+          # Confere o formato sem revelar o valor (o GitHub mascara os secrets no log).
+          if ! printf '%s' "$URL" | grep -Eq '^https://[a-z0-9]{20}\.supabase\.co$'; then
+            echo "::error::SUPABASE_URL fora do formato esperado https://<20 letras/números>.supabase.co"
+            echo "Copie a 'Project URL' em Supabase → Project Settings → Data API (ou API Keys)."
+            exit 1
+          fi
+
+          CODIGO=$(curl -sS -o resposta.txt -w '%{http_code}' -X POST "$URL/rest/v1/rpc/ping" \
+            -H "apikey: $(printf '%s' "$SUPABASE_ANON_KEY" | tr -d '[:space:]')" \
             -H "Content-Type: application/json" \
             -d '{}')
-          echo "Supabase respondeu: $resposta"
+          echo "HTTP $CODIGO"
+          echo "Supabase respondeu: $(cat resposta.txt)"
+
+          case "$CODIGO" in
+            200) echo "✅ Supabase ativo." ;;
+            401|403) echo "::error::Chave recusada. Confira SUPABASE_ANON_KEY (publishable/anon, NÃO a secret)."; exit 1 ;;
+            404) echo "::error::Função ping() não encontrada. Confira se o sql/001_schema.sql rodou neste projeto e se o schema 'public' está exposto em Project Settings → Data API."; exit 1 ;;
+            *)   echo "::error::Resposta inesperada do Supabase."; exit 1 ;;
+          esac
