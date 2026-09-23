@@ -1,0 +1,30 @@
+# -----------------------------------------------------------------------------
+# Arquivos que NUNCA vão para o GitHub
+# -----------------------------------------------------------------------------
+
+# Configuração local com URL/chave do Supabase (em produção é gerada pelo
+# GitHub Actions a partir dos Secrets). Ver docs/DECISOES.md (D-07).
+js/config.js
+
+# Qualquer arquivo de ambiente/segredo
+.env
+.env.*
+*.pem
+*.key
+
+# Exportações de dados financeiros (backup mensal) — ficam no seu PC, não no Git
+exports/
+*.export.json
+financas-*.json
+financas-*.csv
+
+# Node / ferramentas
+node_modules/
+npm-debug.log*
+
+# Sistema operacional / editores
+Thumbs.db
+Desktop.ini
+.DS_Store
+.vscode/*
+!.vscode/extensions.json

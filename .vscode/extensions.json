@@ -1,0 +1,10 @@
+{
+  // Extensões recomendadas do VS Code para este projeto.
+  // O VS Code oferece instalá-las ao abrir a pasta.
+  "recommendations": [
+    "ritwickdey.liveserver",
+    "esbenp.prettier-vscode",
+    "streetsidesoftware.code-spell-checker-portuguese-brazilian",
+    "mtxr.sqltools"
+  ]
+}
