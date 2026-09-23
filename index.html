@@ -1,0 +1,51 @@
+<!doctype html>
+<!--
+  =============================================================================
+  index.html — Casca do aplicativo (PWA)
+  -----------------------------------------------------------------------------
+  Só a estrutura fixa: topo, área de conteúdo e abas inferiores. As telas são
+  desenhadas pelo JavaScript (js/app.js → js/ui/*.js).
+
+  Bibliotecas externas (CDN, versão fixa para não mudar sem aviso):
+    * supabase-js 2.117.1 — login e banco (variável global `supabase`)
+  O Service Worker (sw.js) guarda tudo em cache para abrir sem internet.
+  =============================================================================
+-->
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Finanças da Família</title>
+  <meta name="description" content="Controle financeiro da família">
+  <!-- Sistema privado: não indexar em buscadores -->
+  <meta name="robots" content="noindex, nofollow">
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#F2F2F7" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+
+  <!-- iPhone: tela cheia ao abrir pela Tela de Início -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Finanças">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+
+  <link rel="stylesheet" href="css/app.css">
+
+  <!-- Supabase (cliente oficial). Versão fixa; atualizar conscientemente. -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.js"
+          crossorigin="anonymous" defer></script>
+  <script type="module" src="js/app.js"></script>
+</head>
+<body class="sem-abas">
+  <header id="topo" class="topo"></header>
+  <main id="conteudo" class="conteudo">
+    <div class="carregando" aria-busy="true">Carregando…</div>
+  </main>
+  <nav id="abas" class="abas" aria-label="Navegação principal"></nav>
+  <noscript>Este aplicativo precisa de JavaScript ativado.</noscript>
+</body>
+</html>

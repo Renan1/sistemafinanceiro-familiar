@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Ícone do app: casa (família) com gráfico de barras subindo (finanças). -->
+  <defs>
+    <linearGradient id="fundo" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0A84FF"/>
+      <stop offset="1" stop-color="#30D158"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#fundo)"/>
+  <g id="desenho" fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round">
+    <!-- casa -->
+    <path d="M96 244 256 108l160 136" stroke-width="34"/>
+    <path d="M134 222v176h244V222" stroke-width="30"/>
+    <!-- barras -->
+    <g fill="#fff" stroke="none">
+      <rect x="178" y="318" width="40" height="56" rx="10"/>
+      <rect x="236" y="282" width="40" height="92" rx="10"/>
+      <rect x="294" y="244" width="40" height="130" rx="10"/>
+    </g>
+  </g>
+</svg>

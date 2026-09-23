@@ -1,0 +1,24 @@
+{
+  "name": "Finanças da Família",
+  "short_name": "Finanças",
+  "description": "Controle financeiro da família: gastos, ganhos e saúde financeira.",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "start_url": "./#/gasto",
+  "scope": "./",
+  "id": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F2F2F7",
+  "theme_color": "#F2F2F7",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "shortcuts": [
+    { "name": "Novo gasto", "url": "./#/gasto" },
+    { "name": "Novo ganho", "url": "./#/ganho" }
+  ]
+}
