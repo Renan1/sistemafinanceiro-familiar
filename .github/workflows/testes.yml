@@ -1,0 +1,39 @@
+# =============================================================================
+# Testes automáticos
+# -----------------------------------------------------------------------------
+# Roda a cada push e em cada Pull Request. Sobe um Postgres limpo dentro do
+# GitHub (não toca no Supabase real), aplica o schema e executa os testes de
+# segurança (RLS) e de regras de negócio. Se algo quebrar, o GitHub marca o
+# commit com ❌ e mostra qual teste falhou.
+# =============================================================================
+name: Testes
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  banco:
+    name: Banco de dados (schema + RLS)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+    steps:
+      - uses: actions/checkout@v4
+      - name: Instalar cliente psql
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
+      - name: Rodar testes do banco
+        run: bash tests/sql/rodar_testes.sh
