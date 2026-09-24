@@ -22,6 +22,8 @@ export const estado = {
   cartoes: [],
   /** Contagem de uso por categoria, para ordenar "mais usadas primeiro". */
   usoCategorias: {},
+  /** Recorrências (gastos/ganhos fixos) da família. */
+  recorrencias: [],
 };
 
 const ouvintes = new Set();
@@ -38,11 +40,11 @@ function avisar() {
 
 /** Carrega o que estiver guardado no aparelho. Devolve true se havia perfil. */
 export async function carregarDoAparelho() {
-  const [perfil, membros, categorias, cartoes, uso] = await Promise.all([
+  const [perfil, membros, categorias, cartoes, uso, recorrencias] = await Promise.all([
     lerCache('perfil'), lerCache('membros', []), lerCache('categorias', []),
-    lerCache('cartoes', []), lerCache('uso_categorias', {}),
+    lerCache('cartoes', []), lerCache('uso_categorias', {}), lerCache('recorrencias', []),
   ]);
-  Object.assign(estado, { perfil, membros, categorias, cartoes, usoCategorias: uso });
+  Object.assign(estado, { perfil, membros, categorias, cartoes, usoCategorias: uso, recorrencias });
   avisar();
   return Boolean(perfil);
 }
@@ -58,14 +60,16 @@ export async function atualizarDoServidor(userId) {
   } catch (e) {
     if (e.tipo === 'rede') log.info('estado', 'Sem internet: usando dados guardados no aparelho');
     else log.erro('estado', 'Não foi possível atualizar os dados', e);
-    if (e.tipo === 'recusado') throw e; // ex.: usuário sem família — a tela precisa mostrar
+    // Só "usuário sem família" impede o uso (a tela precisa explicar). Outras
+    // falhas: segue com o que está guardado no aparelho.
+    if (e.semFamilia) throw e;
     return false;
   }
 }
 
 /** Limpa a memória (ao sair da conta). */
 export function limparEstado() {
-  Object.assign(estado, { perfil: null, membros: [], categorias: [], cartoes: [], usoCategorias: {} });
+  Object.assign(estado, { perfil: null, membros: [], categorias: [], cartoes: [], usoCategorias: {}, recorrencias: [] });
   avisar();
 }
 
@@ -95,3 +99,15 @@ export function nomeMembro(userId, { eu = true } = {}) {
 
 export const categoriaPorId = (id) => estado.categorias.find((c) => c.id === id);
 export const cartaoPorId = (id) => estado.cartoes.find((c) => c.id === id);
+
+/** Categorias de um tipo para gerenciar (inclui inativas), na ordem definida. */
+export function categoriasDoTipo(tipo) {
+  return estado.categorias.filter((c) => c.tipo === tipo)
+    .sort((a, b) => a.ordem - b.ordem || a.nome.localeCompare(b.nome));
+}
+
+/** Membros da família: o usuário primeiro. */
+export function membrosOrdenados() {
+  const meu = estado.perfil?.id;
+  return [...estado.membros].sort((a, b) => (a.id === meu ? -1 : b.id === meu ? 1 : a.nome.localeCompare(b.nome)));
+}

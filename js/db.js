@@ -190,18 +190,21 @@ export async function usuarioAtual() {
  * @returns {{perfil, membros, categorias, cartoes}}
  */
 export async function carregarDadosBase(userId) {
-  const [membros, categorias, cartoes] = await Promise.all([
+  const [membros, categorias, cartoes, recorrencias] = await Promise.all([
     executar(cliente.from('profiles').select('id, nome, cor_identificacao, household_id'), 'Carregar membros'),
+    // Todas as categorias (inclusive inativas): lançamentos antigos precisam do nome.
     executar(cliente.from('categorias').select('id, nome, tipo, icone, cor, ativa, ordem')
-      .eq('ativa', true).order('ordem').order('nome'), 'Carregar categorias'),
+      .order('ordem').order('nome'), 'Carregar categorias'),
     executar(cliente.from('cartoes').select('id, user_id, apelido, bandeira, ultimos4, dia_fechamento, dia_vencimento, limite_centavos, ativo')
       .order('apelido'), 'Carregar cartões'),
+    executar(cliente.from('recorrencias').select('*').order('descricao'), 'Carregar recorrências'),
   ]);
 
   const perfil = membros.find((m) => m.id === userId);
   if (!perfil) {
     const e = new Error('Seu usuário não está ligado a nenhuma família. Rode o sql/002_bootstrap_familia.sql.');
     e.tipo = 'recusado';
+    e.semFamilia = true;
     throw e;
   }
 
@@ -210,9 +213,10 @@ export async function carregarDadosBase(userId) {
     gravarCache('membros', membros),
     gravarCache('categorias', categorias),
     gravarCache('cartoes', cartoes),
+    gravarCache('recorrencias', recorrencias),
   ]);
   log.info('db', 'Dados base atualizados', { categorias: categorias.length, cartoes: cartoes.length, membros: membros.length });
-  return { perfil, membros, categorias, cartoes };
+  return { perfil, membros, categorias, cartoes, recorrencias };
 }
 
 // =============================================================================
@@ -233,11 +237,11 @@ export function salvarReceita(dados) {
 export async function listarLancamentosDoMes(competencia, proximaCompetencia) {
   const [despesas, receitas] = await Promise.all([
     executar(cliente.from('despesas')
-      .select('id, user_id, data_compra, valor_total_centavos, descricao, categoria_id, forma_pagamento, cartao_id, qtd_parcelas, natureza, latitude')
+      .select('id, user_id, data_compra, valor_total_centavos, descricao, categoria_id, forma_pagamento, cartao_id, qtd_parcelas, natureza, latitude, longitude, precisao_metros, local_nome, observacao, recorrencia_id, competencia_recorrencia, origem')
       .is('excluido_em', null).gte('data_compra', competencia).lt('data_compra', proximaCompetencia)
       .order('data_compra', { ascending: false }).order('created_at', { ascending: false }), 'Listar despesas'),
     executar(cliente.from('receitas')
-      .select('id, user_id, data, valor_centavos, descricao, categoria_id, natureza')
+      .select('id, user_id, household_id, data, valor_centavos, descricao, categoria_id, natureza, observacao, recorrencia_id, competencia_recorrencia, origem')
       .is('excluido_em', null).gte('data', competencia).lt('data', proximaCompetencia)
       .order('data', { ascending: false }), 'Listar receitas'),
   ]);
@@ -260,4 +264,90 @@ export function criarCartao(cartao) {
 /** Exclui (sem uso) ou arquiva (com histórico). Devolve 'excluido' | 'arquivado'. */
 export function excluirCartao(id) {
   return executar(cliente.rpc('excluir_cartao', { p_cartao: id }), 'Excluir cartão');
+}
+
+export function atualizarCartao(id, campos) {
+  return executar(cliente.from('cartoes').update(campos).eq('id', id).select().single(), 'Atualizar cartão');
+}
+
+// =============================================================================
+// Recorrências (Fase 3 — RF-30 a RF-32)
+// =============================================================================
+
+/**
+ * Chaves "recorrenciaId|AAAA-MM-01" dos lançamentos JÁ gerados no servidor,
+ * inclusive os excluídos (excluiu, não volta — js/recorrencias.js).
+ */
+export async function chavesRecorrenciaGeradas(recorrenciaIds) {
+  if (recorrenciaIds.length === 0) return new Set();
+  const [despesas, receitas] = await Promise.all([
+    executar(cliente.from('despesas').select('recorrencia_id, competencia_recorrencia').in('recorrencia_id', recorrenciaIds), 'Recorrências geradas (despesas)'),
+    executar(cliente.from('receitas').select('recorrencia_id, competencia_recorrencia').in('recorrencia_id', recorrenciaIds), 'Recorrências geradas (receitas)'),
+  ]);
+  return new Set([...despesas, ...receitas].map((l) => `${l.recorrencia_id}|${l.competencia_recorrencia}`));
+}
+
+export function criarRecorrencia(rec) {
+  return executar(cliente.from('recorrencias').insert(rec).select().single(), 'Criar recorrência');
+}
+
+/** Pausar/retomar (ativa), encerrar (data_fim) ou corrigir descrição/dia. */
+export function atualizarRecorrencia(id, campos) {
+  return executar(cliente.from('recorrencias').update(campos).eq('id', id).select().single(), 'Atualizar recorrência');
+}
+
+/** Novo valor a partir de um mês, preservando o histórico (RPC do sql/004). */
+export function alterarValorRecorrencia(id, aPartir, valorCentavos) {
+  return executar(cliente.rpc('alterar_valor_recorrencia', { p_recorrencia: id, p_a_partir: aPartir, p_valor: valorCentavos }), 'Alterar valor da recorrência');
+}
+
+/** Exclui a recorrência. Lançamentos já gerados CONTINUAM (perdem só o vínculo). */
+export function excluirRecorrencia(id) {
+  return executar(cliente.from('recorrencias').delete().eq('id', id), 'Excluir recorrência');
+}
+
+// =============================================================================
+// Categorias (Fase 3 — RF-52, RF-53)
+// =============================================================================
+
+export function criarCategoria(cat) {
+  return executar(cliente.from('categorias').insert(cat).select().single(), 'Criar categoria');
+}
+
+export function atualizarCategoria(id, campos) {
+  return executar(cliente.from('categorias').update(campos).eq('id', id).select().single(), 'Atualizar categoria');
+}
+
+/** Exclui; se estiver em uso, `destino` é obrigatório (lançamentos são movidos). */
+export function excluirCategoria(id, destino = null) {
+  return executar(cliente.rpc('excluir_categoria', { p_categoria: id, p_destino: destino }), 'Excluir categoria');
+}
+
+// =============================================================================
+// Orçamentos (Fase 3 — RF-55)
+// =============================================================================
+
+export function listarOrcamentos() {
+  return executar(cliente.from('orcamentos').select('id, categoria_id, user_id, valor_mensal_centavos'), 'Listar orçamentos');
+}
+
+/** Cria ou atualiza o orçamento (categoria + pessoa; user_id null = família). */
+export function salvarOrcamento({ id, categoria_id, user_id, valor_mensal_centavos }) {
+  const consulta = id
+    ? cliente.from('orcamentos').update({ valor_mensal_centavos }).eq('id', id).select().single()
+    : cliente.from('orcamentos').insert({ categoria_id, user_id, valor_mensal_centavos }).select().single();
+  return executar(consulta, 'Salvar orçamento');
+}
+
+export function excluirOrcamento(id) {
+  return executar(cliente.from('orcamentos').delete().eq('id', id), 'Excluir orçamento');
+}
+
+// =============================================================================
+// Perfil
+// =============================================================================
+
+/** Só nome e cor podem ser alterados (o banco impede o resto). */
+export function atualizarPerfil(id, { nome, cor_identificacao }) {
+  return executar(cliente.from('profiles').update({ nome, cor_identificacao }).eq('id', id).select().single(), 'Atualizar perfil');
 }

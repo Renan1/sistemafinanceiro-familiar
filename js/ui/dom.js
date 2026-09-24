@@ -72,6 +72,8 @@ export function avisar(texto, { tipo = 'info', duracao = 2600 } = {}) {
   }
   const el = h('div', { class: `aviso aviso-${tipo}`, role: 'status' }, texto);
   area.append(el);
+  // No máximo 2 avisos na tela: o mais antigo sai.
+  while (area.children.length > 2) area.firstElementChild.remove();
 
   let timer;
   const fechar = () => {
@@ -110,5 +112,61 @@ export function confirmar(mensagem, { sim = 'Confirmar', nao = 'Cancelar', perig
     dialogo.addEventListener('cancel', () => fechar(false));
     document.body.append(dialogo);
     dialogo.showModal();
+  });
+}
+
+// -----------------------------------------------------------------------------
+// Diálogo com formulário ("Novo valor a partir de…", "Mover para qual categoria?")
+// -----------------------------------------------------------------------------
+
+/**
+ * Abre um diálogo com campos e devolve os valores preenchidos (ou null se
+ * cancelar).
+ * @param {object} p
+ * @param {string} p.titulo
+ * @param {string} [p.texto]
+ * @param {Array<{nome:string, rotulo:string, tipo?:string, valor?:string,
+ *                opcoes?:Array<{valor:string, rotulo:string}>, atributos?:object}>} p.campos
+ *        tipo: 'text' (padrão), 'month', 'date', 'number', 'select'…
+ * @param {string} [p.confirmar='Salvar']
+ * @param {(valores:object)=>string|null} [p.validar]  devolve mensagem de erro ou null
+ */
+export function formularioDialogo({ titulo, texto, campos, confirmar: rotuloOk = 'Salvar', perigoso = false, validar }) {
+  return new Promise((resolve) => {
+    const entradas = {};
+    const erro = h('p', { class: 'mensagem-form', role: 'alert' });
+    const linhas = campos.map((c) => {
+      const entrada = c.tipo === 'select'
+        ? h('select', { class: 'campo', name: c.nome },
+          c.opcoes.map((o) => h('option', { value: o.valor, selected: o.valor === c.valor }, o.rotulo)))
+        : h('input', { class: 'campo', name: c.nome, type: c.tipo ?? 'text', value: c.valor ?? '', ...(c.atributos ?? {}) });
+      entradas[c.nome] = entrada;
+      return h('label', { class: 'campo-rotulo' }, h('span', {}, c.rotulo), entrada);
+    });
+
+    const dialogo = h('dialog', { class: 'dialogo' },
+      h('form', {
+        method: 'dialog',
+        onsubmit: (e) => {
+          e.preventDefault();
+          const valores = Object.fromEntries(Object.entries(entradas).map(([k, el]) => [k, el.value]));
+          const problema = validar?.(valores);
+          if (problema) { erro.textContent = problema; return; }
+          fechar(valores);
+        },
+      },
+      h('h3', { class: 'dialogo-titulo' }, titulo),
+      texto ? h('p', {}, texto) : null,
+      linhas,
+      erro,
+      h('div', { class: 'dialogo-botoes' },
+        h('button', { type: 'button', class: 'btn btn-secundario', onclick: () => fechar(null) }, 'Cancelar'),
+        h('button', { type: 'submit', class: `btn ${perigoso ? 'btn-perigo' : 'btn-primario'}` }, rotuloOk))));
+
+    const fechar = (resposta) => { dialogo.close(); dialogo.remove(); resolve(resposta); };
+    dialogo.addEventListener('cancel', () => fechar(null));
+    document.body.append(dialogo);
+    dialogo.showModal();
+    Object.values(entradas)[0]?.focus();
   });
 }

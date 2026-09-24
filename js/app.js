@@ -22,14 +22,21 @@ import { indicadorSync } from './ui/componentes.js';
 import { contarFila, ouvirFila, limparCache, listarFila } from './offline.js';
 import { sincronizar, definirUsuario, ligarGatilhos, ouvirSync, estadoSync } from './sync.js';
 import { estado, carregarDoAparelho, atualizarDoServidor, limparEstado } from './estado.js';
+import { gerarPendentes } from './recorrencias.js';
+import { enfileirar } from './offline.js';
+import { hojeSP, competenciaDe } from './formato.js';
 import { montarLogin, montarNovaSenha } from './ui/login.js';
 import { montarNovoGasto } from './ui/novo-gasto.js';
 import { montarNovoGanho } from './ui/novo-ganho.js';
 import { montarLancamentos } from './ui/lancamentos.js';
 import { montarPainel } from './ui/painel.js';
 import { montarMais, montarCartoes, montarDiagnostico } from './ui/mais.js';
+import { montarRecorrencias } from './ui/recorrencias.js';
+import { montarCategorias } from './ui/categorias.js';
+import { montarOrcamentos } from './ui/orcamentos.js';
+import { montarPerfil } from './ui/perfil.js';
 
-const VERSAO = '0.2.0';
+const VERSAO = '0.3.0';
 let BUILD = 'local';
 
 // ---- Elementos fixos do index.html -----------------------------------------
@@ -46,7 +53,34 @@ const ROTAS = {
   '#/mais': { titulo: 'Mais', aba: 'mais', montar: montarMais },
   '#/mais/cartoes': { titulo: 'Cartões', aba: 'mais', montar: montarCartoes },
   '#/mais/diagnostico': { titulo: 'Diagnóstico', aba: 'mais', montar: montarDiagnostico },
+  '#/mais/recorrencias': { titulo: 'Recorrências', aba: 'mais', montar: montarRecorrencias },
+  '#/mais/categorias': { titulo: 'Categorias', aba: 'mais', montar: montarCategorias },
+  '#/mais/orcamentos': { titulo: 'Orçamentos', aba: 'mais', montar: montarOrcamentos },
+  '#/mais/perfil': { titulo: 'Perfil', aba: 'mais', montar: montarPerfil },
+  // Edição de um lançamento (aberta a partir de Lançamentos).
+  '#/editar': { titulo: 'Editar', aba: 'lancamentos', montar: montarEdicao },
 };
+
+/** Lançamento em edição (preenchido por editar() antes de navegar). */
+let emEdicao = null;
+
+/** Chamado pela lista de Lançamentos ao tocar num lançamento próprio. */
+function editar(tipo, registro) {
+  emEdicao = { tipo, registro };
+  navegar('#/editar');
+}
+
+function montarEdicao(raiz, ctx) {
+  if (!emEdicao) { // ex.: recarregou a página na tela de edição
+    history.replaceState(null, '', '#/lancamentos');
+    return montarLancamentos(raiz, ctx);
+  }
+  const { tipo, registro } = emEdicao;
+  document.querySelector('#topo .titulo').textContent = tipo === 'despesa' ? 'Editar gasto' : 'Editar ganho';
+  return tipo === 'despesa'
+    ? montarNovoGasto(raiz, { ...ctx, edicao: registro })
+    : montarNovoGanho(raiz, { ...ctx, edicao: registro });
+}
 const ROTA_INICIAL = '#/gasto';
 
 let limparTelaAtual = null;
@@ -86,13 +120,16 @@ async function iniciar() {
   ouvirFila(atualizarIndicador);
   ouvirSync(atualizarIndicador);
   window.addEventListener('online', atualizarIndicador);
+  window.addEventListener('online', () => gerarRecorrencias());
   window.addEventListener('offline', atualizarIndicador);
 
   // 3) Tela inicial sem depender de internet
   const temDados = await carregarDoAparelho();
   if (temDados && db.situacaoLocal() === 'logado') {
     abrirApp();
-    atualizarDoServidor(estado.perfil.id).catch(mostrarErroFamilia);
+    atualizarDoServidor(estado.perfil.id)
+      .then((atualizou) => { if (atualizou) gerarRecorrencias(); })
+      .catch(mostrarErroFamilia);
   } else {
     const user = db.situacaoLocal() === 'logado' ? await db.usuarioAtual() : null;
     if (user) await entrouComo(user);
@@ -128,6 +165,33 @@ async function entrouComo(user) {
     return telaErro('Sem conexão', 'Não foi possível baixar seus dados. Verifique a internet e tente de novo.');
   }
   abrirApp();
+  gerarRecorrencias();
+}
+
+/**
+ * Cria os lançamentos dos gastos/ganhos fixos que ainda não existem (RF-31).
+ * Só com internet: precisa consultar o que já foi gerado (js/recorrencias.js).
+ */
+async function gerarRecorrencias() {
+  if (!navigator.onLine || !estado.perfil) return;
+  try {
+    const criados = await gerarPendentes({
+      userId: estado.perfil.id,
+      recorrencias: estado.recorrencias,
+      cartoes: estado.cartoes,
+      competenciaAtual: competenciaDe(hojeSP()),
+      jaGeradasNoServidor: db.chavesRecorrenciaGeradas,
+      fila: await listarFila(estado.perfil.id),
+      enfileirar,
+    });
+    if (criados > 0) {
+      log.info('recorrencias', `${criados} lançamento(s) fixo(s) gerado(s)`);
+      avisar(`🔁 ${criados} lançamento(s) fixo(s) do mês adicionado(s)`, { tipo: 'info', duracao: 4000 });
+      sincronizar('recorrencias');
+    }
+  } catch (e) {
+    log.aviso('recorrencias', 'Não foi possível gerar os lançamentos fixos agora', e);
+  }
 }
 
 function mostrarErroFamilia(e) {
@@ -180,6 +244,7 @@ function rotear() {
 
   if (typeof limparTelaAtual === 'function') limparTelaAtual();
   limparTelaAtual = null;
+  if (location.hash !== '#/editar') emEdicao = null;
 
   document.title = `${rota.titulo} · Finanças da Família`;
   trocar(elTopo, h('h1', { class: 'titulo' }, rota.titulo), indicador.elemento);
@@ -187,7 +252,9 @@ function rotear() {
   elConteudo.scrollTop = 0;
 
   try {
-    limparTelaAtual = rota.montar(elConteudo, { navegar, aoSair: sairDaConta, versao: VERSAO, build: BUILD });
+    limparTelaAtual = rota.montar(elConteudo, {
+      navegar, editar, gerarRecorrencias, aoSair: sairDaConta, versao: VERSAO, build: BUILD,
+    });
   } catch (e) {
     log.erro('app', `Erro ao abrir a tela ${location.hash}`, e);
     trocar(elConteudo, h('p', { class: 'vazio' }, 'Erro ao abrir esta tela. Veja Mais → Diagnóstico.'));
