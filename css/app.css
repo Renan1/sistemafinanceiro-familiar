@@ -488,3 +488,41 @@ select.campo { appearance: none; -webkit-appearance: none; }
 .mapa .vazio { padding-top: 120px; }
 .leaflet-popup-content { font: 14px/1.4 var(--fonte); }
 
+
+/* ---- Fase 5: Saúde, tarefas, exportação ------------------------------------- */
+.abas a { position: relative; min-width: 0; }
+.abas a span:last-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.selo-aba {
+  position: absolute; top: 4px; left: calc(50% + 6px);
+  min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px;
+  background: var(--status-critico); color: #fff; font-size: 10px; font-weight: 700; line-height: 16px; text-align: center;
+}
+.selo-aba[hidden] { display: none; }
+.cabecalho-secao { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.lista-alertas, .lista-tarefas { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.alerta { display: flex; gap: 10px; padding: 10px; border-radius: var(--raio-p); background: var(--superficie-2); border-left: 4px solid var(--texto-2); }
+.alerta.critico { border-left-color: var(--status-critico); }
+.alerta.atencao { border-left-color: var(--status-atencao); }
+.alerta.info { border-left-color: var(--primaria); }
+.alerta.lido { opacity: .7; }
+.alerta-icone { font-size: 18px; line-height: 1.3; }
+.alerta p { margin: 2px 0 0; font-size: 14px; line-height: 1.35; }
+.alerta-sev { font-size: 12px; text-transform: uppercase; letter-spacing: .3px; color: var(--texto-2); }
+.selo.novo { background: var(--primaria); color: #fff; }
+.vazio.saudavel { color: var(--positivo); }
+.tarefa { display: flex; align-items: flex-start; gap: 10px; padding: 10px; border-radius: var(--raio-p); background: var(--superficie-2); }
+.tarefa input[type="checkbox"] { width: 22px; height: 22px; margin-top: 1px; flex: none; accent-color: var(--positivo); }
+.tarefa-texto { flex: 1; min-width: 0; }
+.tarefa-texto p { margin: 2px 0; font-size: 14px; line-height: 1.35; }
+.tarefa-texto small { color: var(--texto-2); font-size: 12px; }
+.tarefa.p1 { box-shadow: inset 3px 0 0 var(--negativo); }
+.tarefa.encerrada { opacity: .6; }
+.tarefa.encerrada strong { text-decoration: line-through; }
+.feitas summary { color: var(--primaria); padding: 8px 0; font-size: 14px; }
+.dialogo p { white-space: pre-line; }
+.dialogo-largo { width: min(92vw, 480px); }
+.area-colar { font-family: ui-monospace, Menlo, monospace; font-size: 13px; resize: vertical; }
+.passos { margin: 4px 0 12px; padding-left: 20px; font-size: 14px; line-height: 1.5; }
+.btn-largo { width: 100%; }
+.pronto { border: 1.5px solid var(--positivo); }
+.tela .secao + .secao, .tela .secao + div, .tela div + .secao { margin-top: 12px; }

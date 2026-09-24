@@ -7,7 +7,7 @@
  *   * Cartões (aqui): cadastrar, editar e excluir/arquivar.
  *   * Diagnóstico: logs do app (RNF-41), situação da fila e do app.
  *   * Sair.
- * Fase 5: exportação JSON/CSV.
+ *   * Exportar (js/ui/exportar.js): JSON para o Claude, CSV e backup.
  * =============================================================================
  */
 import { h, trocar, avisar, confirmar, formularioDialogo } from './dom.js';
@@ -48,7 +48,7 @@ export function montarMais(raiz, { navegar, aoSair, versao }) {
       item('🏷️', 'Categorias', '#/mais/categorias', 'criar, editar, excluir'),
       item('🎯', 'Orçamentos', '#/mais/orcamentos', 'limite mensal por categoria'),
       item('👤', 'Perfil', '#/mais/perfil', 'nome, cor e senha'),
-      emBreve('📤', 'Exportar dados (JSON/CSV)', 'Fase 5'),
+      item('📤', 'Exportar dados', '#/mais/exportar', 'JSON para o Claude, CSV e backup'),
       item('🩺', 'Diagnóstico e logs', '#/mais/diagnostico')),
     h('div', { class: 'menu' },
       h('button', {
