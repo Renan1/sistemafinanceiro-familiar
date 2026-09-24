@@ -351,3 +351,31 @@ export function excluirOrcamento(id) {
 export function atualizarPerfil(id, { nome, cor_identificacao }) {
   return executar(cliente.from('profiles').update({ nome, cor_identificacao }).eq('id', id).select().single(), 'Atualizar perfil');
 }
+
+// =============================================================================
+// Painel (Fase 4 — RF-60 a RF-63)
+// =============================================================================
+
+/**
+ * Tudo o que o Painel precisa para um mês, em 4 consultas paralelas:
+ *   resumo    vw_resumo_mensal dos 12 meses até o mês (gráfico de evolução)
+ *   parcelas  vw_parcelas_detalhe do mês até +6 (categorias, formas, faturas)
+ *   mapa      gastos do mês com localização
+ *   orcamentos
+ * O RLS garante que só vem o que é da família.
+ */
+export async function dadosPainel(competencia, { inicio12, fim6, proximaCompetencia }) {
+  const [resumo, parcelas, mapa, orcamentos] = await Promise.all([
+    executar(cliente.from('vw_resumo_mensal').select('*')
+      .gte('competencia', inicio12).lte('competencia', competencia), 'Painel: resumo 12 meses'),
+    executar(cliente.from('vw_parcelas_detalhe')
+      .select('despesa_id, user_id, competencia, valor_centavos, numero, total, data_compra, categoria_id, categoria_nome, categoria_icone, categoria_cor, forma_pagamento, cartao_id, natureza')
+      .gte('competencia', competencia).lte('competencia', fim6), 'Painel: parcelas'),
+    executar(cliente.from('despesas')
+      .select('id, user_id, data_compra, valor_total_centavos, descricao, local_nome, categoria_id, latitude, longitude')
+      .is('excluido_em', null).not('latitude', 'is', null)
+      .gte('data_compra', competencia).lt('data_compra', proximaCompetencia), 'Painel: mapa'),
+    executar(cliente.from('orcamentos').select('categoria_id, user_id, valor_mensal_centavos'), 'Painel: orçamentos'),
+  ]);
+  return { resumo, parcelas, mapa, orcamentos };
+}

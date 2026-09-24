@@ -2,6 +2,21 @@
 
 Todas as mudanças relevantes do projeto. Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/), versões em [SemVer](https://semver.org/lang/pt-BR/).
 
+## [0.4.0] — 2026-09-24 — Fase 4: Painel com gráficos e mapa
+
+### Adicionado
+- **Painel completo** (filtros de mês e visão Eu / cônjuge / Família):
+  - números do mês (ganhos, gastos, saldo, taxa de poupança, % de fixos sobre a renda);
+  - **previsto × realizado** — ganhos e gastos fixos (recorrências), variáveis (orçamentos), diferença com ▲/▼ e parcelas de compras anteriores em destaque;
+  - gastos por categoria (rosca, 5 maiores + "Outras", lista com valor e %);
+  - ganhos × gastos em 12 meses; fixos × variáveis em 6 meses; gastos por forma de pagamento;
+  - faturas do cartão nos próximos 6 meses;
+  - orçamento × realizado com ✓ / ⚠ 80% / ⛔ 100% (ícone + texto, nunca só cor);
+  - **mapa** (Leaflet + OpenStreetMap) com pontos agrupados, cor por categoria e popup.
+- "Ver números" (tabela) em todos os gráficos; tema claro/escuro com cores próprias validadas.
+- `js/dashboard.js` (cálculos puros, 12 testes), `js/ui/graficos.js`, `js/mapa.js`, `js/libs.js` (Chart.js 4.5.1, Leaflet 1.9.4 e markercluster 1.5.3 carregados só no Painel e guardados em cache).
+- Teste que garante que as bibliotecas do Painel estão no cache offline.
+
 ## [0.3.0] — 2026-09-24 — Fase 3: Lançamentos e cadastros
 
 ### Adicionado

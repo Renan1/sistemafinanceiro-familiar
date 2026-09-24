@@ -122,3 +122,19 @@ Cada decisão importante fica registrada aqui com **o que** foi decidido e **por
 
 ### D-33 — Cadastros (categorias, recorrências, orçamentos, cartões, perfil) exigem internet
 **Por quê:** são raros e afetam a família inteira (ex.: mover lançamentos de categoria). Fazer isso offline abriria espaço para conflitos entre os dois aparelhos, sem ganho real no dia a dia. O registro rápido de gasto/ganho continua 100% offline.
+
+### D-34 — Cores dos gráficos por papel, validadas
+**Decisão:** Ganhos = azul, Gastos = laranja, Fixos = violeta, em todo o Painel; categorias usam a cor da própria categoria (a cor segue a entidade). Cada par foi validado com o script de paleta (separação para daltonismo e contraste) no tema claro e no escuro, com tons próprios para cada tema. Cores de status (verde/amarelo/vermelho) ficam reservadas para "dentro/atenção/estourou" e sempre vêm com ícone + texto.
+**Por quê:** a mesma cor significando a mesma coisa em todos os gráficos reduz esforço de leitura; validação calculada evita "parece diferente o bastante" no olho.
+
+### D-35 — Gráficos e mapa carregados só no Painel
+**Decisão:** Chart.js e Leaflet (com versões fixas) são baixados quando o Painel abre (`js/libs.js`) e guardados pelo Service Worker.
+**Por quê:** a tela de gasto — usada no ato da compra — não pode ficar mais lenta por causa de bibliotecas que ela não usa.
+
+### D-36 — Previsto × realizado sem "total inventado"
+**Decisão:** o previsto é mostrado por linha: ganhos fixos (recorrências), gastos fixos (recorrências) e gastos variáveis (orçamentos); parcelas de compras de meses anteriores aparecem como informação à parte.
+**Por quê:** somar tudo num único "gasto previsto" misturaria coisas de natureza diferente (compromisso fixo, limite desejado, dívida já feita) e esconderia de onde vem a diferença.
+
+### D-37 — Painel calcula no aparelho a partir das views
+**Decisão:** 4 consultas por mês (resumo de 12 meses, parcelas do mês até +6, gastos com localização, orçamentos); os agrupamentos por visão/categoria/forma são feitos em `js/dashboard.js`.
+**Por quê:** trocar a visão (Eu/Camilla/Família) é instantâneo e funciona offline com a cópia guardada; as funções são puras e testadas.

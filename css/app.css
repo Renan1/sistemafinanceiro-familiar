@@ -24,6 +24,14 @@
   --ganho: #30A14E;
   --tecla: #FFFFFF;
   --tecla-ativa: #D1D1D6;
+  /* Séries dos gráficos (paleta validada p/ daltonismo — docs/DECISOES.md D-34) */
+  --serie-ganhos: #2a78d6;
+  --serie-gastos: #eb6834;
+  --serie-fixos: #4a3aa7;
+  /* Status (reservados: só para bom/atenção/crítico, sempre com ícone + texto) */
+  --status-bom: #0ca30c;
+  --status-atencao: #fab219;
+  --status-critico: #d03b3b;
 
   --raio: 14px;
   --raio-p: 10px;
@@ -48,6 +56,9 @@
     --ganho: #30D158;
     --tecla: #2C2C2E;
     --tecla-ativa: #48484A;
+    --serie-ganhos: #3987e5;
+    --serie-gastos: #d95926;
+    --serie-fixos: #9085e9;
   }
 }
 
@@ -430,3 +441,50 @@ select.campo { appearance: none; -webkit-appearance: none; }
 .cor.ativa { border-color: var(--texto); }
 .linha-orcamento { display: flex; align-items: center; gap: 10px; }
 .linha-orcamento .item-texto { flex: 1; }
+
+/* ---- Fase 4: Painel ---------------------------------------------------------- */
+.painel { display: flex; flex-direction: column; gap: 12px; }
+.secao { background: var(--superficie); border-radius: var(--raio); padding: 14px; }
+.secao-titulo { font-size: 17px; font-weight: 600; }
+.secao-sub { font-size: 13px; color: var(--texto-2); margin: 2px 0 10px; display: block; }
+.area-grafico { position: relative; width: 100%; }
+.mudo { color: var(--texto-2); }
+
+.tabela-conciliacao, .ver-numeros table { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+.tabela-conciliacao td, .ver-numeros td { white-space: nowrap; }
+.tabela-conciliacao th, .tabela-conciliacao td, .ver-numeros th, .ver-numeros td { padding: 7px 3px; text-align: right; border-bottom: 0.5px solid var(--linha); }
+.tabela-conciliacao th[scope="row"], .ver-numeros th[scope="row"] { text-align: left; font-weight: 500; }
+.tabela-conciliacao thead th, .ver-numeros thead th { color: var(--texto-2); font-weight: 500; font-size: 12px; }
+.tabela-conciliacao .linha-total th, .tabela-conciliacao .linha-total td { font-weight: 700; border-bottom: 0; }
+.dif-bom, .dif-ruim { font-size: 13px; white-space: nowrap; }
+.dif-bom { color: var(--positivo); }
+.dif-ruim { color: var(--negativo); }
+.ver-numeros { margin-top: 8px; }
+.ver-numeros summary { color: var(--primaria); font-size: 14px; padding: 4px 0; }
+
+.rosca-e-lista { display: flex; flex-direction: column; gap: 12px; }
+.rosca-e-lista .area-grafico { max-width: 170px; margin: 0 auto; }
+.lista-legenda { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; font-size: 14px; min-width: 0; }
+.lista-legenda li { display: flex; align-items: center; gap: 6px; }
+.amostra { flex: none; width: 10px; height: 10px; border-radius: 3px; }
+.legenda-nome { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.legenda-valor { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.legenda-valor small { color: var(--texto-2); }
+
+.lista-orcamento { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.orc-linha { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; margin-bottom: 4px; }
+.orc-status { font-size: 12px; font-weight: 600; white-space: nowrap; }
+.orc-trilho { height: 8px; border-radius: 4px; background: var(--superficie-2); overflow: hidden; }
+.orc-barra { height: 100%; border-radius: 4px; }
+.orc-barra.ok { background: var(--status-bom); }
+.orc-barra.atencao { background: var(--status-atencao); }
+.orc-barra.estourado { background: var(--status-critico); }
+.orc-status.ok { color: var(--positivo); }
+.orc-status.atencao { color: var(--atencao); }
+.orc-status.estourado { color: var(--negativo); }
+.lista-orcamento .secao-sub { margin: 4px 0 0; }
+
+.mapa { height: 300px; border-radius: var(--raio-p); overflow: hidden; background: var(--superficie-2); }
+.mapa .vazio { padding-top: 120px; }
+.leaflet-popup-content { font: 14px/1.4 var(--fonte); }
+

@@ -27,11 +27,14 @@ const ARQUIVOS = [
   'css/app.css',
   'js/app.js',
   'js/config.js',
+  'js/dashboard.js',
   'js/db.js',
   'js/estado.js',
   'js/formato.js',
   'js/geo.js',
+  'js/libs.js',
   'js/log.js',
+  'js/mapa.js',
   'js/offline.js',
   'js/parcelas.js',
   'js/recorrencias.js',
@@ -40,6 +43,7 @@ const ARQUIVOS = [
   'js/ui/categorias.js',
   'js/ui/componentes.js',
   'js/ui/dom.js',
+  'js/ui/graficos.js',
   'js/ui/lancamentos.js',
   'js/ui/login.js',
   'js/ui/mais.js',
@@ -54,6 +58,13 @@ const ARQUIVOS = [
   'icons/icon-512.png',
   'icons/apple-touch-icon.png',
   'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.js',
+  // Painel (js/libs.js): gráficos e mapa. As "tiles" das ruas não ficam em cache.
+  'https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js',
+  'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js',
+  'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css',
+  'https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js',
+  'https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.5.3/dist/MarkerCluster.css',
+  'https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css',
 ];
 
 /** Hosts cujas respostas podem ser guardadas (bibliotecas por CDN). */

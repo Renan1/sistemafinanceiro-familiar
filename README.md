@@ -17,8 +17,8 @@ PWA (app que roda no navegador e é instalado na Tela de Início do celular) + S
 | 1 | Banco de dados (schema, RLS, seeds, views, auditoria) + Supabase | ✅ v0.1.0 |
 | 2 | App: login, novo gasto, novo ganho, parcelas, offline, localização, publicação | ✅ v0.2.0 |
 | 3 | Lançamentos, recorrências, cartões, categorias, orçamentos | ✅ v0.3.0 |
-| 4 | Dashboard com conciliação, gráficos e mapa | ⏳ próxima |
-| 5 | Saúde financeira (regras, tarefas), exportação, Skill do Claude | — |
+| 4 | Dashboard com conciliação, gráficos e mapa | ✅ v0.4.0 |
+| 5 | Saúde financeira (regras, tarefas), exportação, Skill do Claude | ⏳ próxima |
 
 ## Documentação
 
@@ -31,6 +31,7 @@ PWA (app que roda no navegador e é instalado na Tela de Início do celular) + S
 | [docs/fase1-supabase.md](docs/fase1-supabase.md) | Passo a passo para criar e configurar o Supabase |
 | [docs/fase2-publicacao.md](docs/fase2-publicacao.md) | Publicar no GitHub Pages, subdomínio no Cloudflare, instalar no celular, roteiro de testes |
 | [docs/fase3-cadastros.md](docs/fase3-cadastros.md) | Fase 3: atualizar o banco (004), o que mudou e roteiro de testes |
+| [docs/fase4-painel.md](docs/fase4-painel.md) | Fase 4: como ler o Painel (previsto × realizado, gráficos, mapa) e roteiro de testes |
 | [docs/CONVENCOES.md](docs/CONVENCOES.md) | Padrão de commits, versões, branches e mudanças no banco |
 | [CHANGELOG.md](CHANGELOG.md) | Histórico de versões |
 
@@ -66,6 +67,8 @@ js/                   código do app
   sync.js               envio da fila (abrir app, voltar sinal, voltar à tela)
   parcelas.js           calcularParcelas() — regra do cartão
   recorrencias.js       geração automática dos gastos/ganhos fixos
+  dashboard.js          cálculos do Painel (previsto × realizado, séries, orçamento)
+  mapa.js · libs.js     mapa (Leaflet) e carregamento sob demanda de gráficos/mapa
   geo.js · log.js · formato.js · validacao.js · estado.js
   ui/                   telas (login, gasto, ganho, lançamentos, painel, recorrências, categorias, orçamentos, perfil, mais)
 icons/                ícones do app
