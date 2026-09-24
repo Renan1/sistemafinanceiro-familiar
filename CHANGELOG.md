@@ -19,6 +19,8 @@ Todas as mudanças relevantes do projeto. Formato baseado em [Keep a Changelog](
 - 43 testes JS (`npm test`) no GitHub Actions; teste ponta a ponta no navegador validou CA-01, CA-02, CA-04 e CA-05.
 - `docs/fase2-publicacao.md`: Pages, Cloudflare, instalação no celular e roteiro de testes.
 
+- `sql/manutencao/limpar_lancamentos_teste.sql`: zera os lançamentos de teste (com prévia e confirmação), mantendo cadastros.
+
 ### Corrigido
 - Workflow de ping: normaliza a `SUPABASE_URL` (barra final / `/rest/v1`) e mostra a resposta do Supabase.
 
