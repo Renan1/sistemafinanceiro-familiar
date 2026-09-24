@@ -31,3 +31,11 @@ test('a versão do supabase-js é a mesma no index.html e no sw.js', () => {
   const versao = (texto) => texto.match(/supabase-js@([\d.]+)/)?.[1];
   assert.equal(versao(readFileSync('sw.js', 'utf8')), versao(readFileSync('index.html', 'utf8')));
 });
+
+test('as bibliotecas do Painel (js/libs.js) estão no cache do Service Worker', () => {
+  const sw = readFileSync('sw.js', 'utf8');
+  const libs = [...readFileSync('js/libs.js', 'utf8').matchAll(/'(https:\/\/cdn[^']+)'/g)].map((m) => m[1]);
+  assert.ok(libs.length >= 6);
+  const faltando = libs.filter((u) => !sw.includes(`'${u}'`));
+  assert.deepEqual(faltando, [], `Adicione ao ARQUIVOS do sw.js: ${faltando.join(', ')}`);
+});

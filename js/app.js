@@ -36,7 +36,7 @@ import { montarCategorias } from './ui/categorias.js';
 import { montarOrcamentos } from './ui/orcamentos.js';
 import { montarPerfil } from './ui/perfil.js';
 
-const VERSAO = '0.3.0';
+const VERSAO = '0.4.0';
 let BUILD = 'local';
 
 // ---- Elementos fixos do index.html -----------------------------------------
