@@ -101,6 +101,7 @@ erDiagram
 | `salvar_despesa(despesa, parcelas)` | Cria/edita/exclui despesa e regenera parcelas, atômico e idempotente |
 | `excluir_categoria(categoria, destino)` | Move lançamentos para o destino e exclui |
 | `excluir_cartao(cartao)` | Apaga (sem uso) ou arquiva (com histórico) |
+| `alterar_valor_recorrencia(rec, a_partir, valor)` | Novo valor a partir de um mês, preservando histórico (sql/004) |
 | `ping()` | Mantém o Supabase gratuito ativo |
 
 ## Estrutura de pastas (alvo ao final das fases)

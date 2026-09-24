@@ -103,3 +103,22 @@ Cada decisão importante fica registrada aqui com **o que** foi decidido e **por
 
 ### D-28 — Service Worker: cache primeiro, versão por commit
 **Decisão:** arquivos do app e bibliotecas são servidos do cache (rápido e offline). Cada publicação troca o nome do cache pelo hash do commit, o que faz o navegador baixar a versão nova e o app oferecer "toque para atualizar" — nunca recarrega sozinho no meio de um lançamento. No PC (versão não publicada) usa rede primeiro, para ver alterações na hora.
+
+### D-29 — Recorrências geradas no aparelho, com id determinístico
+**Decisão:** o app (não o banco) gera os lançamentos dos gastos/ganhos fixos, ao abrir com internet, só para as recorrências do próprio usuário. O id de cada lançamento é derivado de (recorrência, mês) por SHA-256.
+**Por quê:** despesas no crédito precisam da regra do cartão, que mora em `calcularParcelas()` (D-05). O id determinístico faz dois aparelhos gerando ao mesmo tempo resultarem no MESMO registro (upsert), e o índice único do banco é a trava final.
+
+### D-30 — Excluído não volta
+**Decisão:** antes de gerar, o app consulta os meses já gerados **inclusive os excluídos** (soft delete).
+**Por quê:** se você excluir o lançamento de um mês (ex.: não pagou a academia em julho), ele não pode reaparecer na próxima abertura.
+
+### D-31 — Alterar valor "a partir de um mês" por função no banco
+**Decisão:** `alterar_valor_recorrencia()` encerra a recorrência antiga no mês anterior, cria a nova com `substitui_id` e atualiza os lançamentos já gerados daquele mês em diante — numa transação.
+**Por quê:** são 3–4 alterações que precisam acontecer juntas; feitas pelo app, uma queda de conexão no meio deixaria dados inconsistentes. O histórico de reajustes fica navegável pelo `substitui_id`.
+
+### D-32 — Edição passa pela fila
+**Decisão:** editar/excluir um lançamento reenvia o registro inteiro com o MESMO id pela fila offline (exclusão = `excluido_em` preenchido).
+**Por quê:** mesma garantia do lançamento novo: funciona sem sinal, não duplica, e o banco (RLS) impede alterar o de outra pessoa mesmo que alguém tente.
+
+### D-33 — Cadastros (categorias, recorrências, orçamentos, cartões, perfil) exigem internet
+**Por quê:** são raros e afetam a família inteira (ex.: mover lançamentos de categoria). Fazer isso offline abriria espaço para conflitos entre os dois aparelhos, sem ganho real no dia a dia. O registro rápido de gasto/ganho continua 100% offline.

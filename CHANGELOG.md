@@ -2,6 +2,23 @@
 
 Todas as mudanças relevantes do projeto. Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/), versões em [SemVer](https://semver.org/lang/pt-BR/).
 
+## [0.3.0] — 2026-09-24 — Fase 3: Lançamentos e cadastros
+
+### Adicionado
+- **Lançamentos**: filtros (pessoa, tipo, categoria, forma de pagamento, fixo/variável), busca sem acento, totais do filtro e **editar/excluir** os próprios lançamentos — também sem internet (a fila do aparelho tem prioridade na lista).
+- **Recorrências** (Mais → Recorrências): gastos e ganhos fixos; o app gera os lançamentos do mês (e meses atrasados, até 24) ao abrir com internet, com id determinístico por (recorrência, mês) — sem duplicar mesmo em dois aparelhos. Pausar, retomar, encerrar, excluir e **alterar valor a partir de um mês**.
+- `sql/004_fase3_recorrencias.sql`: função `alterar_valor_recorrencia()` — encerra a antiga, cria a nova com `substitui_id`, atualiza lançamentos já gerados; tudo numa transação.
+- **Categorias**: criar, editar (nome, emoji, cor, ordem), desativar/reativar, excluir movendo os lançamentos em uso.
+- **Orçamentos**: valor mensal por categoria, familiar ou individual.
+- **Cartões**: edição (apelido, fechamento, vencimento, limite).
+- **Perfil**: nome, cor e troca de senha.
+- `js/recorrencias.js` com 16 testes; `lerValorBR()` para valores digitados em R$; teste que garante que todo arquivo JS está no cache offline.
+- Testes do banco da Fase 3 (9) e runner que aplica os scripts novos automaticamente.
+
+### Corrigido
+- Falha ao carregar um cadastro não mostra mais "Conta sem família" por engano: só o caso real bloqueia; o resto segue com os dados do aparelho.
+- No máximo 2 avisos empilhados na tela.
+
 ## [0.2.0] — 2026-09-23 — Fase 2: App (PWA)
 
 ### Adicionado
