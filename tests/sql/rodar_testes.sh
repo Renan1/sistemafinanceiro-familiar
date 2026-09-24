@@ -25,6 +25,13 @@ echo "==> Simulando Supabase (auth, papéis)"
 echo "==> Aplicando sql/001_schema.sql"
 "${PSQL[@]}" -f sql/001_schema.sql
 
+# Scripts das fases seguintes (004, 005…), na ordem do número.
+for arquivo in $(ls sql/0*.sql | sort); do
+  case "$arquivo" in sql/001_*|sql/002_*|sql/003_*) continue ;; esac
+  echo "==> Aplicando $arquivo"
+  "${PSQL[@]}" -f "$arquivo"
+done
+
 echo "==> Criando usuários de teste e aplicando sql/002_bootstrap_familia.sql"
 "${PSQL[@]}" -c "insert into auth.users (email) values ('renan@teste.com'), ('camilla@teste.com')"
 sed -e 's/EMAIL_DO_RENAN@exemplo.com/renan@teste.com/' \
@@ -38,5 +45,8 @@ if echo "$RESULTADO" | grep -qE 'FALHA|PENDENTE'; then
   echo "!! Verificação encontrou problemas"; exit 1
 fi
 
-echo "==> Testes de RLS e regras de negócio"
-"${PSQL[@]}" -f tests/sql/10_testes_schema.sql 2>&1 | sed 's/^psql:[^ ]* NOTICE:  /  /'
+# Todos os arquivos de teste (10_, 20_…), na ordem. O 10 cria as ferramentas.
+for arquivo in $(ls tests/sql/[1-9]*_testes_*.sql | sort); do
+  echo "==> $arquivo"
+  "${PSQL[@]}" -f "$arquivo" 2>&1 | sed 's/^psql:[^ ]* NOTICE:  /  /'
+done
