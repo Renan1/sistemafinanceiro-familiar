@@ -2,6 +2,16 @@
 
 Todas as mudanças relevantes do projeto. Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/), versões em [SemVer](https://semver.org/lang/pt-BR/).
 
+## [0.5.0] — 2026-09-24 — Fase 5: Saúde financeira, exportação e Skill do Claude
+
+### Adicionado
+- **Motor de regras** (`js/regras.js`) com as 9 regras especificadas e todos os limites em `LIMITES`: gastos > ganhos, orçamento 80%/100%, categoria +30% sobre a média de 3 meses, parcelas futuras > 30% da renda, fixos > 50%, poupança < 10%, > 15 compras pequenas em delivery, revisão trimestral de assinaturas, mês sem ganho. Avalia família e cada pessoa; roda ao abrir o app (a cada 6 h) e sob demanda.
+- `sql/005_fase5_saude.sql`: `substituir_insights()` — grava os alertas do mês de uma vez, mantendo os já lidos.
+- **Aba Saúde**: alertas por severidade (ícone + texto), selo de não lidos na aba, tarefas com checkbox/descartar/criar, **Importar tarefas do Claude** com prévia e sem duplicar.
+- **Exportar** (Mais): JSON do mês para o Claude (`financas-familia/export@1`, sem e-mail/ids/GPS), CSV para Excel e backup completo; Compartilhar (iPhone) ou Baixar.
+- **Skill "Consultor Financeiro Familiar"** (`claude-skill/`): SKILL.md, dicionário do formato, exemplo gerado pelo código do app, resposta-gabarito e guia de conexão futura via MCP.
+- Testes: 29 das regras, 11 de exportação/importação, 5 de contrato Skill ↔ app, 12 do banco (alertas, tarefas, isolamento entre famílias).
+
 ## [0.4.0] — 2026-09-24 — Fase 4: Painel com gráficos e mapa
 
 ### Adicionado

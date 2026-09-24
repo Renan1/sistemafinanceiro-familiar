@@ -138,3 +138,23 @@ Cada decisão importante fica registrada aqui com **o que** foi decidido e **por
 ### D-37 — Painel calcula no aparelho a partir das views
 **Decisão:** 4 consultas por mês (resumo de 12 meses, parcelas do mês até +6, gastos com localização, orçamentos); os agrupamentos por visão/categoria/forma são feitos em `js/dashboard.js`.
 **Por quê:** trocar a visão (Eu/Camilla/Família) é instantâneo e funciona offline com a cópia guardada; as funções são puras e testadas.
+
+### D-38 — Regras no aparelho, alertas gravados no banco
+**Decisão:** o motor de regras roda no app (`js/regras.js`, funções puras) e grava o resultado com `substituir_insights()` (uma chamada por mês, atômica).
+**Por quê:** as regras e os limites ficam num lugar só, legível e testado; o banco guarda o resultado para os dois celulares verem o mesmo, e preserva o "lido". Uma situação que deixou de existir some sozinha na próxima avaliação.
+
+### D-39 — Tarefas de regra são da família e não duplicam
+**Decisão:** tarefas geradas por regra têm `user_id` nulo (família) e só existe uma aberta por regra (índice único + checagem no app). Tarefas importadas do Claude não duplicam por título entre as abertas.
+**Por quê:** evitar a lista de tarefas virar ruído — cada problema aparece uma vez, até alguém resolvê-lo.
+
+### D-40 — Formatos versionados entre o app e o Claude
+**Decisão:** `financas-familia/export@1` (app → Claude) e `financas-familia/tarefas@1` (Claude → app). O exemplo da Skill é gerado pelo próprio `montarExport()` e um teste falha se o formato mudar sem atualizar a Skill.
+**Por quê:** o app e a Skill evoluem separados; o campo `formato` e o teste de contrato impedem que um quebre o outro em silêncio.
+
+### D-41 — Export para o Claude minimiza dados pessoais
+**Decisão:** o JSON para o Claude leva nomes, valores, categorias e nome do local; **não** leva e-mails, ids internos nem coordenadas GPS. O backup completo (para guardar) leva tudo.
+**Por quê:** a análise não precisa desses dados, e o que vai para uma conversa deve ser o mínimo necessário.
+
+### D-42 — Seis abas
+**Decisão:** Gasto · Ganho · Lançamentos · Painel · **Saúde** · Mais.
+**Por quê:** a Saúde precisa estar à vista (com o selo de alertas) para cumprir o papel de "tarefas de melhoria"; cabe na largura do iPhone com rótulos curtos.

@@ -102,6 +102,7 @@ erDiagram
 | `excluir_categoria(categoria, destino)` | Move lançamentos para o destino e exclui |
 | `excluir_cartao(cartao)` | Apaga (sem uso) ou arquiva (com histórico) |
 | `alterar_valor_recorrencia(rec, a_partir, valor)` | Novo valor a partir de um mês, preservando histórico (sql/004) |
+| `substituir_insights(competencia, alertas)` | Grava os alertas do mês do motor de regras, mantendo os lidos (sql/005) |
 | `ping()` | Mantém o Supabase gratuito ativo |
 
 ## Estrutura de pastas (alvo ao final das fases)
@@ -121,13 +122,16 @@ erDiagram
 │  ├─ sync.js           envio da fila
 │  ├─ parcelas.js       calcularParcelas()
 │  ├─ estado.js · geo.js · log.js · formato.js · validacao.js
-│  ├─ regras.js         motor de regras (Fase 5)
+│  ├─ regras.js         motor de regras (limites em LIMITES)
+│  ├─ saude.js          roda as regras e grava alertas/tarefas
+│  ├─ exportacao.js     export JSON/CSV e importação de tarefas do Claude
 │  ├─ dashboard.js      cálculos do Painel (Fase 4)
 │  ├─ mapa.js · libs.js mapa e bibliotecas sob demanda (Fase 4)
 │  └─ ui/               telas
 ├─ sql/                 scripts do banco (rodar no Supabase, em ordem)
 ├─ tests/               testes (SQL e JS)
 ├─ docs/                documentação
-├─ claude-skill/        Skill "Consultor Financeiro Familiar" (Fase 5)
+├─ claude-skill/        Skill "Consultor Financeiro Familiar"
+├─ scripts/             utilitários (exemplo da Skill)
 └─ .github/workflows/   automações
 ```
