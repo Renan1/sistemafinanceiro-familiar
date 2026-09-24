@@ -122,7 +122,8 @@ erDiagram
 │  ├─ parcelas.js       calcularParcelas()
 │  ├─ estado.js · geo.js · log.js · formato.js · validacao.js
 │  ├─ regras.js         motor de regras (Fase 5)
-│  ├─ dashboard.js · mapa.js  (Fase 4)
+│  ├─ dashboard.js      cálculos do Painel (Fase 4)
+│  ├─ mapa.js · libs.js mapa e bibliotecas sob demanda (Fase 4)
 │  └─ ui/               telas
 ├─ sql/                 scripts do banco (rodar no Supabase, em ordem)
 ├─ tests/               testes (SQL e JS)
