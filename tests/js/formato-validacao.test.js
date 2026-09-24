@@ -6,7 +6,7 @@
  */
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { moeda, dataBR, mesAbrev, mesExtenso, hojeSP, competenciaDe, somarMesesCompetencia, percentual } from '../../js/formato.js';
+import { lerValorBR, valorParaCampo, moeda, dataBR, mesAbrev, mesExtenso, hojeSP, competenciaDe, somarMesesCompetencia, percentual } from '../../js/formato.js';
 import { validarSenha, validarGasto, validarGanho, validarCartao, validarEmail } from '../../js/validacao.js';
 
 describe('Formatação pt-BR (RNF-30)', () => {
@@ -71,4 +71,22 @@ describe('Validação de lançamentos', () => {
     assert.deepEqual(validarEmail('renan@exemplo.com'), []);
     assert.equal(validarEmail('renan@').length, 1);
   });
+});
+
+describe('Valor digitado em R$', () => {
+  test('formatos aceitos', () => {
+    assert.equal(lerValorBR('1.234,56'), 123456);
+    assert.equal(lerValorBR('1234,5'), 123450);
+    assert.equal(lerValorBR('1234.56'), 123456);
+    assert.equal(lerValorBR('R$ 80'), 8000);
+    assert.equal(lerValorBR('1.500'), 150000);
+    assert.equal(lerValorBR('0,01'), 1);
+  });
+  test('inválidos viram null', () => {
+    assert.equal(lerValorBR(''), null);
+    assert.equal(lerValorBR('abc'), null);
+    assert.equal(lerValorBR('1,234,5'), null);
+    assert.equal(lerValorBR('10,999'), null);
+  });
+  test('volta para o campo', () => assert.equal(valorParaCampo(123456), '1.234,56'));
 });

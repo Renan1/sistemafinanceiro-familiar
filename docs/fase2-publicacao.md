@@ -98,6 +98,19 @@ Faça no celular, pelo app instalado. Marque cada um:
 
 Se algo falhar: **Mais → Diagnóstico → Copiar logs** e me mande (os logs não contêm senha nem chave).
 
+### Depois dos testes: zerar os lançamentos de teste
+
+Os testes gravam dados **reais** no banco. Para começar o uso de verdade do zero:
+
+1. Nos dois celulares, com internet, confira **"✓ Tudo sincronizado"** no topo (nada pendente).
+2. Supabase → SQL Editor → cole `sql/manutencao/limpar_lancamentos_teste.sql`:
+   - rode a **Parte 1** (prévia) e confira as quantidades;
+   - na **Parte 2**, troque `v_confirmo := false` por `true` e rode;
+   - rode a Parte 1 de novo: tudo zerado.
+3. Feche e abra o app nos celulares.
+
+Apaga só gastos, parcelas, ganhos e alertas. **Mantém** família, usuários, categorias, cartões, recorrências e orçamentos.
+
 ---
 
 ## Rodar o app no PC (opcional, para testar alterações)

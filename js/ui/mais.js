@@ -2,20 +2,20 @@
  * =============================================================================
  * js/ui/mais.js — Aba "Mais": perfil, cartões, diagnóstico e sair
  * -----------------------------------------------------------------------------
- * Nesta fase:
- *   * Cartões: cadastrar (apelido, bandeira, 4 finais, fechamento, vencimento,
- *     limite) e excluir/arquivar — necessário para lançar no crédito.
+ *   * Perfil (js/ui/perfil.js), Categorias (js/ui/categorias.js),
+ *     Recorrências (js/ui/recorrencias.js), Orçamentos (js/ui/orcamentos.js).
+ *   * Cartões (aqui): cadastrar, editar e excluir/arquivar.
  *   * Diagnóstico: logs do app (RNF-41), situação da fila e do app.
  *   * Sair.
- * Fase 3: categorias, recorrências, orçamentos, perfil. Fase 5: exportação.
+ * Fase 5: exportação JSON/CSV.
  * =============================================================================
  */
-import { h, trocar, avisar, confirmar } from './dom.js';
+import { h, trocar, avisar, confirmar, formularioDialogo } from './dom.js';
 import * as db from '../db.js';
 import { log } from '../log.js';
 import { contarFila } from '../offline.js';
 import { estadoSync, sincronizar } from '../sync.js';
-import { moeda, dataHoraBR } from '../formato.js';
+import { moeda, dataHoraBR, lerValorBR, valorParaCampo } from '../formato.js';
 import { validarCartao } from '../validacao.js';
 import { estado, atualizarDoServidor, nomeMembro } from '../estado.js';
 
@@ -43,10 +43,11 @@ export function montarMais(raiz, { navegar, aoSair, versao }) {
       h('span', { class: 'avatar', style: { background: estado.perfil?.cor_identificacao } }, (estado.perfil?.nome ?? '?')[0]),
       h('div', {}, h('strong', {}, estado.perfil?.nome ?? ''), h('small', {}, 'Família · ', estado.membros.map((m) => m.nome).join(' e ')))),
     h('div', { class: 'menu' },
+      item('🔁', 'Recorrências', '#/mais/recorrencias', 'gastos e ganhos fixos do mês'),
       item('💳', 'Cartões', '#/mais/cartoes', `${estado.cartoes.filter((c) => c.ativo).length} ativo(s)`),
-      emBreve('🏷️', 'Categorias', 'Fase 3'),
-      emBreve('🔁', 'Recorrências (gastos e ganhos fixos)', 'Fase 3'),
-      emBreve('🎯', 'Orçamentos', 'Fase 3'),
+      item('🏷️', 'Categorias', '#/mais/categorias', 'criar, editar, excluir'),
+      item('🎯', 'Orçamentos', '#/mais/orcamentos', 'limite mensal por categoria'),
+      item('👤', 'Perfil', '#/mais/perfil', 'nome, cor e senha'),
       emBreve('📤', 'Exportar dados (JSON/CSV)', 'Fase 5'),
       item('🩺', 'Diagnóstico e logs', '#/mais/diagnostico')),
     h('div', { class: 'menu' },
@@ -92,11 +93,36 @@ export function montarCartoes(raiz, { navegar }) {
             meu ? null : `de ${nomeMembro(c.user_id)}`,
             c.ativo ? null : 'ARQUIVADO',
           ].filter(Boolean).join(' · '))),
-        meu && c.ativo ? h('button', {
-          type: 'button', class: 'link perigo',
-          onclick: () => excluir(c),
-        }, 'Excluir') : null);
+        meu && c.ativo ? h('div', { class: 'item-acoes' },
+          h('button', { type: 'button', class: 'link', onclick: () => editar(c) }, 'Editar'),
+          h('button', { type: 'button', class: 'link perigo', onclick: () => excluir(c) }, 'Excluir')) : null);
     }));
+  }
+
+  async function editar(c) {
+    const v = await formularioDialogo({
+      titulo: `Editar ${c.apelido}`,
+      texto: 'Mudar fechamento/vencimento vale para as PRÓXIMAS compras; as já lançadas mantêm as faturas calculadas.',
+      campos: [
+        { nome: 'apelido', rotulo: 'Apelido', valor: c.apelido, atributos: { maxlength: '40' } },
+        { nome: 'dia_fechamento', rotulo: 'Fecha dia', tipo: 'number', valor: String(c.dia_fechamento), atributos: { min: '1', max: '31' } },
+        { nome: 'dia_vencimento', rotulo: 'Vence dia', tipo: 'number', valor: String(c.dia_vencimento), atributos: { min: '1', max: '31' } },
+        { nome: 'limite', rotulo: 'Limite (R$, opcional)', valor: c.limite_centavos ? valorParaCampo(c.limite_centavos) : '', atributos: { inputmode: 'decimal' } },
+      ],
+      validar: (x) => validarCartao({ ...c, apelido: x.apelido, dia_fechamento: Number(x.dia_fechamento), dia_vencimento: Number(x.dia_vencimento),
+        limite_centavos: x.limite.trim() ? lerValorBR(x.limite) : null })[0] ?? null,
+    });
+    if (!v) return;
+    try {
+      await db.atualizarCartao(c.id, {
+        apelido: v.apelido.trim(), dia_fechamento: Number(v.dia_fechamento), dia_vencimento: Number(v.dia_vencimento),
+        limite_centavos: v.limite.trim() ? lerValorBR(v.limite) : null,
+      });
+      avisar('Cartão atualizado ✓', { tipo: 'ok' });
+      await recarregar();
+    } catch (e) {
+      avisar(e.tipo === 'rede' ? 'Sem internet — precisa de conexão.' : e.message, { tipo: 'erro' });
+    }
   }
 
   async function excluir(c) {

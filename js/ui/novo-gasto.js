@@ -12,9 +12,14 @@
  * Ao abrir, já começa a buscar a localização (js/geo.js) — sem travar nada.
  * Ao salvar, o gasto vai PRIMEIRO para o aparelho (js/offline.js) e a tela
  * confirma na hora; depois tenta enviar (js/sync.js).
+ *
+ * MODO EDIÇÃO (Fase 3 — RF-41): aberta a partir de Lançamentos com um gasto
+ * existente. Mesmo formulário, preenchido; "Salvar alterações" reenvia com o
+ * MESMO id (o banco atualiza e regenera as parcelas — RN-17) e "Excluir"
+ * marca como excluído. Tudo passa pela fila, então funciona sem internet.
  * =============================================================================
  */
-import { h, trocar, avisar, vibrar } from './dom.js';
+import { h, trocar, avisar, vibrar, confirmar } from './dom.js';
 import { teclado, mostradorValor, chips, gradeCategorias, segmentado } from './componentes.js';
 import { calcularParcelas, MAX_PARCELAS } from '../parcelas.js';
 import { moeda, mesAbrev, hojeSP } from '../formato.js';
@@ -23,7 +28,7 @@ import { iniciarCaptura } from '../geo.js';
 import { enfileirar, listarFila, registrarUsoCategoria, novoId } from '../offline.js';
 import { sincronizar } from '../sync.js';
 import { log } from '../log.js';
-import { estado, categoriasOrdenadas, cartoesAtivos, cartaoPorId, nomeMembro } from '../estado.js';
+import { estado, categoriasOrdenadas, cartoesAtivos, cartaoPorId, categoriaPorId, nomeMembro } from '../estado.js';
 
 const FORMAS = [
   { valor: 'pix', rotulo: 'PIX', icone: '⚡' },
@@ -44,9 +49,20 @@ const lembrar = {
  * Monta a tela dentro de `raiz`.
  * @returns {() => void} função de limpeza (chamada ao trocar de tela)
  */
-export function montarNovoGasto(raiz, { navegar }) {
+export function montarNovoGasto(raiz, { navegar, edicao = null }) {
   // ---- Estado do formulário ------------------------------------------------
-  const s = {
+  // `edicao` = linha da despesa sendo editada (null = gasto novo).
+  const s = edicao ? {
+    centavos: edicao.valor_total_centavos,
+    forma: edicao.forma_pagamento,
+    cartaoId: edicao.cartao_id,
+    parcelas: edicao.qtd_parcelas,
+    categoriaId: edicao.categoria_id,
+    natureza: edicao.natureza,
+    data: edicao.data_compra,
+    descricao: edicao.descricao ?? '',
+    localNome: edicao.local_nome ?? '',
+  } : {
     centavos: 0,
     forma: lembrar.ler('ultima-forma', 'pix'),
     cartaoId: lembrar.ler('ultimo-cartao', '') || null,
@@ -57,7 +73,23 @@ export function montarNovoGasto(raiz, { navegar }) {
     descricao: '',
     localNome: '',
   };
-  if (s.cartaoId && !cartoesAtivos().some((c) => c.id === s.cartaoId)) s.cartaoId = null;
+
+  /** Cartões disponíveis; na edição inclui o cartão original mesmo se arquivado. */
+  const listaCartoes = () => {
+    const lista = cartoesAtivos();
+    const original = edicao?.cartao_id && cartaoPorId(edicao.cartao_id);
+    if (original && !lista.some((c) => c.id === original.id)) lista.push(original);
+    return lista;
+  };
+  if (s.cartaoId && !listaCartoes().some((c) => c.id === s.cartaoId)) s.cartaoId = null;
+
+  /** Categorias de gasto; na edição inclui a original mesmo se desativada. */
+  const listaCategorias = () => {
+    const lista = categoriasOrdenadas('despesa');
+    const original = edicao && categoriaPorId(edicao.categoria_id);
+    if (original && !lista.some((c) => c.id === original.id)) lista.unshift(original);
+    return lista;
+  };
 
   // ---- Localização (começa já) ---------------------------------------------
   const geoTexto = h('span', { class: 'geo' });
@@ -69,7 +101,11 @@ export function montarNovoGasto(raiz, { navegar }) {
       indisponivel: '📍 sem localização',
     }[situacao];
   };
-  let captura = iniciarCaptura(atualizarGeo);
+  // Na edição, mantém a localização original (não captura de novo).
+  let captura = edicao
+    ? { atual: () => (edicao.latitude != null ? { latitude: edicao.latitude, longitude: edicao.longitude, precisao: edicao.precisao_metros } : null) }
+    : iniciarCaptura(atualizarGeo);
+  if (edicao) geoTexto.textContent = edicao.latitude != null ? '📍 localização original mantida' : '📍 sem localização';
 
   // ---- Valor ---------------------------------------------------------------
   const mostrador = mostradorValor();
@@ -98,7 +134,7 @@ export function montarNovoGasto(raiz, { navegar }) {
   function desenharCredito() {
     if (s.forma !== 'credito') { areaCredito.hidden = true; return; }
     areaCredito.hidden = false;
-    const cartoes = cartoesAtivos();
+    const cartoes = listaCartoes();
     if (cartoes.length === 0) {
       trocar(areaCredito, h('div', { class: 'alerta-inline' },
         'Nenhum cartão cadastrado. ',
@@ -152,8 +188,8 @@ export function montarNovoGasto(raiz, { navegar }) {
 
   // ---- Categoria -----------------------------------------------------------
   const grade = gradeCategorias({
-    categorias: categoriasOrdenadas('despesa'),
-    selecionada: null,
+    categorias: listaCategorias(),
+    selecionada: s.categoriaId,
     aoEscolher: (id) => { s.categoriaId = id; },
   });
 
@@ -168,16 +204,17 @@ export function montarNovoGasto(raiz, { navegar }) {
     onchange: (e) => { s.data = e.target.value || hojeSP(); atualizarPrevia(); },
   });
   const campoDescricao = h('input', {
-    type: 'text', class: 'campo', placeholder: 'Descrição (opcional)', maxlength: '120', enterkeyhint: 'done',
+    type: 'text', class: 'campo', placeholder: 'Descrição (opcional)', maxlength: '120', enterkeyhint: 'done', value: s.descricao,
     oninput: (e) => { s.descricao = e.target.value; },
   });
   const campoLocal = h('input', {
-    type: 'text', class: 'campo', placeholder: 'Nome do local (opcional)', maxlength: '80', enterkeyhint: 'done',
+    type: 'text', class: 'campo', placeholder: 'Nome do local (opcional)', maxlength: '80', enterkeyhint: 'done', value: s.localNome,
     oninput: (e) => { s.localNome = e.target.value; },
   });
 
   // ---- Salvar --------------------------------------------------------------
-  const botaoSalvar = h('button', { type: 'button', class: 'btn btn-primario btn-salvar', onclick: salvar }, 'Salvar gasto');
+  const botaoSalvar = h('button', { type: 'button', class: 'btn btn-primario btn-salvar', onclick: salvar },
+    edicao ? 'Salvar alterações' : 'Salvar gasto');
 
   async function salvar() {
     const erros = validarGasto({
@@ -203,7 +240,7 @@ export function montarNovoGasto(raiz, { navegar }) {
     }
 
     botaoSalvar.disabled = true;
-    const id = novoId();
+    const id = edicao?.id ?? novoId();
     const pos = captura.atual();
     const dados = {
       id,
@@ -219,7 +256,11 @@ export function montarNovoGasto(raiz, { navegar }) {
       longitude: pos?.longitude ?? null,
       precisao_metros: pos?.precisao ?? null,
       local_nome: s.localNome.trim() || null,
-      origem: 'manual',
+      origem: edicao?.origem ?? 'manual',
+      // Vínculo com a recorrência que gerou este gasto (se houver) é mantido.
+      recorrencia_id: edicao?.recorrencia_id ?? null,
+      competencia_recorrencia: edicao?.competencia_recorrencia ?? null,
+      observacao: edicao?.observacao ?? null,
     };
 
     try {
@@ -232,7 +273,13 @@ export function montarNovoGasto(raiz, { navegar }) {
     }
 
     vibrar(15);
-    log.info('gasto', 'Gasto salvo', { id, valor: s.centavos, forma: s.forma, parcelas: s.parcelas, comLocal: Boolean(pos) });
+    log.info('gasto', edicao ? 'Gasto alterado' : 'Gasto salvo', { id, valor: s.centavos, forma: s.forma, parcelas: s.parcelas, comLocal: Boolean(pos) });
+    if (edicao) {
+      avisar('Alteração salva ✓', { tipo: 'ok' });
+      sincronizar('editar');
+      navegar('#/lancamentos');
+      return;
+    }
     const aviso = avisar(`Salvo ✓ ${moeda(s.centavos)} — enviando…`, { tipo: 'ok', duracao: 4000 });
 
     await registrarUsoCategoria(s.categoriaId);
@@ -267,10 +314,29 @@ export function montarNovoGasto(raiz, { navegar }) {
     captura = iniciarCaptura(atualizarGeo); // nova posição para o próximo gasto
   }
 
+  // ---- Excluir (só na edição) ------------------------------------------------
+  async function excluir() {
+    const ok = await confirmar(`Excluir este gasto de ${moeda(edicao.valor_total_centavos)}?${edicao.qtd_parcelas > 1 ? ` As ${edicao.qtd_parcelas} parcelas também serão removidas.` : ''}`,
+      { sim: 'Excluir', perigoso: true });
+    if (!ok) return;
+    await enfileirar({
+      tipo: 'despesa', id: edicao.id, user_id: estado.perfil.id,
+      dados: { ...camposDespesa(edicao), excluido_em: new Date().toISOString() },
+      parcelas: [],
+    });
+    log.info('gasto', 'Gasto excluído', { id: edicao.id });
+    avisar('Gasto excluído ✓', { tipo: 'ok' });
+    sincronizar('excluir');
+    navegar('#/lancamentos');
+  }
+
   // ---- Montagem ------------------------------------------------------------
   trocar(raiz,
     h('section', { class: 'tela-lancamento' },
       h('div', { class: 'rolagem' },
+        edicao ? h('div', { class: 'cabecalho-edicao' },
+          h('button', { type: 'button', class: 'link voltar', onclick: () => navegar('#/lancamentos') }, '‹ Lançamentos'),
+          h('button', { type: 'button', class: 'link perigo', onclick: excluir }, 'Excluir')) : null,
         mostrador.elemento,
         chipsForma.elemento,
         areaCredito,
@@ -286,6 +352,17 @@ export function montarNovoGasto(raiz, { navegar }) {
       h('div', { class: 'doca' }, tec.elemento, botaoSalvar),
     ));
   desenharCredito();
+  // Na edição, o TECLADO começa com o valor original (senão apagar um
+  // dígito partiria do zero). Fica no fim porque atualiza a prévia.
+  if (edicao) tec.definir(edicao.valor_total_centavos);
 
   return () => tec.elemento.desligar();
+}
+
+/** Só as colunas que a RPC salvar_despesa() aceita (a lista traz outras). */
+export function camposDespesa(d) {
+  const campos = ['id', 'data_compra', 'valor_total_centavos', 'descricao', 'categoria_id', 'forma_pagamento',
+    'cartao_id', 'qtd_parcelas', 'natureza', 'recorrencia_id', 'competencia_recorrencia', 'latitude',
+    'longitude', 'precisao_metros', 'local_nome', 'origem', 'observacao'];
+  return Object.fromEntries(campos.map((c) => [c, d[c] ?? null]));
 }
