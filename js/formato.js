@@ -78,3 +78,21 @@ export function dataHoraBR(iso) {
     timeZone: FUSO, day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit',
   }).format(new Date(iso));
 }
+
+/**
+ * Texto digitado em reais → centavos. Aceita "1.234,56", "1234,5", "1234.56",
+ * "R$ 80". Devolve null se não for um valor válido.
+ */
+export function lerValorBR(texto) {
+  let t = String(texto ?? '').replace(/[R$\s]/g, '');
+  if (!t) return null;
+  if (t.includes(',')) t = t.replace(/\./g, '').replace(',', '.');   // formato brasileiro
+  else if (/^\d{1,3}(\.\d{3})+$/.test(t)) t = t.replace(/\./g, ''); // "1.234" = mil
+  if (!/^\d+(\.\d{1,2})?$/.test(t)) return null;
+  return Math.round(Number(t) * 100);
+}
+
+/** Centavos → texto para campo de edição: 123456 → "1.234,56". */
+export function valorParaCampo(centavos) {
+  return ((Number(centavos) || 0) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
