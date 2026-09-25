@@ -86,4 +86,7 @@ Para qualquer outra coisa: **Mais → Diagnóstico → Copiar logs** (sem senha 
 
 O fluxo continua o mesmo das fases: nova sessão comigo → branch → testes → Pull Request → você roda o SQL novo (se houver) → merge → o app se atualiza sozinho.
 
+**Marcar uma versão (Release)** — depois do merge de uma versão nova (ex.: `v1.0.0`):
+GitHub → repositório → **Releases** → **Draft a new release** → **Choose a tag** → digite `v1.0.0` → **Create new tag on publish** (alvo: `main`) → título `v1.0.0` → cole a seção da versão do `CHANGELOG.md` → **Publish release**.
+
 Ideias já previstas (docs/REQUISITOS.md §10): importação de fatura do cartão (PDF/CSV/OFX), metas de economia, verificação em duas etapas no login. Também já documentado: leitura direta pelo Claude via MCP (`claude-skill/consultor-financeiro/referencias/mcp-supabase.md`).

@@ -11,7 +11,7 @@ As 5 fases foram entregues e validadas no celular pelos dois usuários. Isso inc
   - rotinas diária, mensal, trimestral e anual;
   - o que vigiar (workflow de ping desativado pelo GitHub, pausa do Supabase);
   - solução de problemas, ajustes comuns, backup e segurança.
-- Tags Git de todas as versões (`v0.1.0` … `v1.0.0`), conforme docs/CONVENCOES.md.
+- Release `v1.0.0` no GitHub (criada após o merge, pelo passo a passo em docs/OPERACAO.md §7).
 
 ### Alterado
 - Versão do app e do `package.json` para 1.0.0.
