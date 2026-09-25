@@ -9,6 +9,7 @@
  *   * Sair.
  *   * Exportar (js/ui/exportar.js): JSON para o Claude, CSV e backup.
  *   * Atalho do iPhone (js/ui/atalho.js): compras da Carteira → caixa de entrada (v1.2).
+ *   * Importar extrato/fatura (js/ui/importar.js): Itaú, Nubank, OFX (v1.3).
  * =============================================================================
  */
 import { h, trocar, avisar, confirmar, formularioDialogo } from './dom.js';
@@ -49,6 +50,7 @@ export function montarMais(raiz, { navegar, aoSair, versao }) {
       item('🏷️', 'Categorias', '#/mais/categorias', 'criar, editar, excluir'),
       item('🎯', 'Orçamentos', '#/mais/orcamentos', 'limite mensal por categoria'),
       item('👤', 'Perfil', '#/mais/perfil', 'nome, cor e senha'),
+      item('📥', 'Importar extrato ou fatura', '#/mais/importar', 'Nubank, Itaú e OFX — sem duplicar'),
       item('📤', 'Exportar dados', '#/mais/exportar', 'JSON para o Claude, CSV e backup'),
       item('📲', 'Atalho do iPhone', '#/mais/atalho', 'compras da Carteira direto no app'),
       item('🩺', 'Diagnóstico e logs', '#/mais/diagnostico')),

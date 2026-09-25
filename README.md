@@ -21,8 +21,8 @@ PWA (app que roda no navegador e é instalado na Tela de Início do celular) + S
 | 5 | Saúde financeira (regras, tarefas), exportação, Skill do Claude | ✅ v0.5.0 |
 | — | **Sistema completo em uso** (validado no celular) + manual de operação | ✅ **v1.0.0** |
 | 1.1 | Compra parcelada com juros (valor da parcela + preço à vista) | ✅ v1.1.0 |
-| 1.2 | Compras da Carteira do iPhone direto no app (Atalhos + caixa de entrada) | 🔄 v1.2.0 |
-| 1.3 | Importar extrato/fatura (Itaú, Nubank) com classificação automática | ⏳ |
+| 1.2 | Compras da Carteira do iPhone direto no app (Atalhos + caixa de entrada) | ✅ v1.2.1 |
+| 1.3 | Importar extrato e fatura (Nubank, Itaú, OFX) com categoria sugerida e sem duplicar | 🔄 v1.3.0 |
 
 ## Documentação
 
@@ -56,6 +56,7 @@ PWA (app que roda no navegador e é instalado na Tela de Início do celular) + S
 
 1. App → **Mais → Exportar dados → Gerar JSON do mês** → Compartilhar.
 2. Claude (com a Skill instalada): *"Analise com o Consultor Financeiro Familiar"*.
+   (Antes, importe as faturas e o extrato do mês: Mais → Importar extrato ou fatura.)
 3. Copie o bloco de tarefas → App → **Saúde → ✨ Importar tarefas do Claude**.
 4. Gere o **Backup completo** e guarde.
 
@@ -85,6 +86,7 @@ js/                   código do app
   dashboard.js          cálculos do Painel (previsto × realizado, séries, orçamento)
   regras.js             motor de regras (limites em LIMITES) · saude.js roda e grava
   exportacao.js         export JSON (Claude) / CSV e importação de tarefas do Claude
+  importacao.js         importar extrato/fatura (Nubank, Itaú, OFX) · planilha-worker.js lê .xls/.xlsx isolado
   mapa.js · libs.js     mapa (Leaflet) e carregamento sob demanda de gráficos/mapa
   geo.js · log.js · formato.js · validacao.js · estado.js
   ui/                   telas (login, gasto, ganho, lançamentos, painel, saúde, recorrências, categorias, orçamentos, perfil, exportar, mais)
@@ -97,6 +99,7 @@ sql/                  scripts do banco — rodar no Supabase, em ordem
   005_fase5_saude.sql   gravar alertas do mês (mantendo os lidos)
   006_v11_parcela_com_juros.sql  preço à vista (juros) nas compras parceladas
   007_v12_carteira_iphone.sql    caixa de entrada + chave do Atalho do iPhone
+  008_v13_importar_extrato.sql   categorias aprendidas na importação de extrato
   manutencao/           scripts avulsos (ex.: zerar lançamentos de teste)
 claude-skill/          Skill "Consultor Financeiro Familiar" (SKILL.md, formato, exemplos, MCP)
 scripts/              utilitários (gera o exemplo da Skill com o código do app)

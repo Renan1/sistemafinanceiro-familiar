@@ -155,6 +155,26 @@ Cada decisão importante fica registrada aqui com **o que** foi decidido e **por
 **Decisão:** o JSON para o Claude leva nomes, valores, categorias e nome do local; **não** leva e-mails, ids internos nem coordenadas GPS. O backup completo (para guardar) leva tudo.
 **Por quê:** a análise não precisa desses dados, e o que vai para uma conversa deve ser o mínimo necessário.
 
+### D-46 — Importação lida no aparelho, com prévia e confirmação
+**Decisão:** o arquivo do banco é lido no navegador (`js/importacao.js`); nada é enviado até a pessoa conferir a prévia e tocar em Importar. Os lançamentos vão pela **mesma fila** dos digitados (offline, idempotente).
+**Por quê:** extrato é dado sensível — não precisa sair do aparelho; a prévia evita lançamento errado no Painel; reaproveitar a fila garante as mesmas regras de validação e sincronização.
+
+### D-47 — Planilhas com SheetJS 0.18.5 num Web Worker isolado
+**Decisão:** .xls/.xlsx são lidos pela SheetJS 0.18.5 (a última publicada no npm/jsDelivr), carregada **dentro de um Web Worker** (`js/planilha-worker.js`) que só devolve as células; tempo limite de 20 s. Não fica no cache de instalação (só é baixada ao importar uma planilha).
+**Por quê:** as versões corrigidas da SheetJS só estão no CDN do próprio projeto, fora do padrão do app (jsDelivr com versão fixa). A 0.18.5 tem falhas conhecidas com arquivos **maliciosos**; no worker, um arquivo "envenenado" não alcança a página, a sessão nem os dados, e um travamento é encerrado. Os arquivos importados são exportações dos próprios bancos. Se um dia a SheetJS corrigida chegar ao npm, basta trocar a URL no worker.
+
+### D-48 — "Parcela k/N" da fatura vira uma compra com as parcelas k…N
+**Decisão:** a linha "Parcela 9/12" cria uma despesa com as parcelas 9 a 12 (4 parcelas, a partir da fatura importada). No mês seguinte, "Parcela 10/12" casa com a parcela já existente (mesmo cartão, mesmo mês, mesmo valor) e aparece como "parece já lançado".
+**Por quê:** mantém a regra de parcelamento única (tabela `parcelas` e competência da fatura) e deixa o Painel mostrar o comprometimento futuro desde a primeira importação, sem precisar dos meses anteriores ao sistema.
+
+### D-49 — Não duplicar: id fixo por linha + "parece já lançado"
+**Decisão:** cada linha tem uma chave (pessoa, arquivo/cartão, data, valor, descrição, parcela, ocorrência) e um id fixo derivado dela (SHA-256, como nas recorrências); reimportar encontra o id e marca "já importado". Contra o que foi lançado por outro caminho: mesmo valor e data ±3 dias (conta) ou mesmo cartão, valor e data da compra ±5 dias / mesma parcela no mesmo mês (cartão). Esses aparecem desmarcados, com o lançamento parecido — a pessoa decide.
+**Por quê:** a importação tem de conviver com o lançamento no dia a dia (app, Carteira, recorrências) sem contar duas vezes; na dúvida, quem decide é a pessoa, com a informação na tela. A data evita confundir a assinatura do mês passado (mesmo valor) com a deste mês.
+
+### D-50 — O que não é gasto nem ganho
+**Decisão:** ignorados por padrão: pagamento de fatura (no cartão e na conta, inclusive boleto do Nubank), aplicação e resgate de investimento, rendimento automático de centavos, compra e estorno que se anulam no mesmo arquivo, "Controle de saldo".
+**Por quê:** pagamento de fatura na conta + compras da fatura contariam o mesmo dinheiro duas vezes; investimento não é consumo nem renda. Tudo aparece na aba "Ignorados" com o motivo e pode ser marcado se a pessoa quiser.
+
 ### D-44 — Carteira do iPhone: caixa de entrada + chave pessoal do atalho
 **Decisão:** o Atalho do iPhone (automação "Transação") chama a função `registrar_compra_atalho()` **sem login**, com uma chave pessoal. A compra entra numa **caixa de entrada** e só vira gasto quando a pessoa confirma no app (categoria sugerida). A chave é gerada pelo banco (2 UUIDs aleatórios ≈ 244 bits), mostrada **uma vez** e guardada só como hash SHA-256; pode ser revogada; limite de 30 envios/hora por chave; no máximo 5 chaves ativas por pessoa. O script `007` confere que só `ping()` e `registrar_compra_atalho()` são chamáveis sem login.
 **Por quê:** a Apple não oferece API das transações da Carteira; o Atalhos é o único caminho oficial e não consegue fazer login com e-mail e senha. A caixa de entrada evita gasto errado (sem categoria, valor de estorno) direto no Painel, e a chave limitada a "só inserir na própria caixa" mantém o sistema fechado mesmo se ela vazar — basta revogar.

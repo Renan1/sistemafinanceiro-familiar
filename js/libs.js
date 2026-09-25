@@ -1,6 +1,7 @@
 /**
  * =============================================================================
- * js/libs.js — Bibliotecas externas carregadas SOB DEMANDA (Chart.js e Leaflet)
+ * js/libs.js — Bibliotecas externas carregadas SOB DEMANDA (Chart.js, Leaflet e,
+ *              na importação de extrato, o leitor de planilhas num worker)
  * -----------------------------------------------------------------------------
  * Gráficos e mapa só são baixados quando você abre o Painel — assim a tela de
  * gasto (a mais usada, no ato da compra) continua leve e rápida.
@@ -65,4 +66,21 @@ export async function carregarLeaflet() {
   await script(LIBS.leafletJs);
   await script(LIBS.clusterJs); // depende do Leaflet já carregado
   return globalThis.L;
+}
+
+/**
+ * Lê uma planilha (.xls / .xlsx) num Web Worker isolado (js/planilha-worker.js)
+ * e devolve as linhas de cada aba: [{ nome, linhas: [[célula, …], …] }].
+ * Encerra o worker se passar do tempo limite (arquivo estranho/travado).
+ * @param {ArrayBuffer} bytes
+ */
+export function lerPlanilha(bytes, { limiteMs = 20000 } = {}) {
+  return new Promise((resolve, reject) => {
+    const worker = new Worker(new URL('./planilha-worker.js', import.meta.url));
+    const fim = (fn, valor) => { clearTimeout(timer); worker.terminate(); fn(valor); };
+    const timer = setTimeout(() => fim(reject, new Error('A leitura da planilha demorou demais.')), limiteMs);
+    worker.onmessage = (e) => (e.data?.ok ? fim(resolve, e.data.abas) : fim(reject, new Error(`Não foi possível ler a planilha: ${e.data?.erro}`)));
+    worker.onerror = (e) => { e.preventDefault?.(); fim(reject, new Error('Não foi possível carregar o leitor de planilhas (precisa de internet).')); };
+    worker.postMessage(bytes, [bytes]);
+  });
 }

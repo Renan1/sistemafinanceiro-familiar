@@ -39,9 +39,10 @@ import { montarSaude } from './ui/saude.js';
 import { montarExportar } from './ui/exportar.js';
 import { montarCaixa } from './ui/caixa.js';
 import { montarAtalho } from './ui/atalho.js';
+import { montarImportar } from './ui/importar.js';
 import { reavaliarSeNecessario } from './saude.js';
 
-const VERSAO = '1.2.1';
+const VERSAO = '1.3.0';
 let BUILD = 'local';
 /** URL e chave pública do Supabase (js/config.js) — a tela do Atalho mostra para copiar. */
 let CONFIG_PUBLICA = null;
@@ -67,6 +68,7 @@ const ROTAS = {
   '#/saude': { titulo: 'Saúde', aba: 'saude', montar: montarSaude },
   '#/mais/exportar': { titulo: 'Exportar', aba: 'mais', montar: montarExportar },
   '#/mais/atalho': { titulo: 'Atalho', aba: 'mais', montar: montarAtalho },
+  '#/mais/importar': { titulo: 'Importar', aba: 'mais', montar: montarImportar },
   '#/caixa': { titulo: 'Carteira', aba: 'gasto', montar: montarCaixa },
   // Edição de um lançamento (aberta a partir de Lançamentos).
   '#/editar': { titulo: 'Editar', aba: 'lancamentos', montar: montarEdicao },
