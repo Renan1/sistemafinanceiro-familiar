@@ -39,7 +39,7 @@ import { montarSaude } from './ui/saude.js';
 import { montarExportar } from './ui/exportar.js';
 import { reavaliarSeNecessario } from './saude.js';
 
-const VERSAO = '0.5.0';
+const VERSAO = '1.0.0';
 let BUILD = 'local';
 
 // ---- Elementos fixos do index.html -----------------------------------------

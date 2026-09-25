@@ -2,6 +2,21 @@
 
 Todas as mudanças relevantes do projeto. Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/), versões em [SemVer](https://semver.org/lang/pt-BR/).
 
+## [1.0.0] — 2026-09-25 — Sistema completo em uso
+
+As 5 fases foram entregues e validadas no celular pelos dois usuários. Isso inclui a rotina mensal completa: exportar → Skill do Claude → importar tarefas.
+
+### Adicionado
+- `docs/OPERACAO.md`: manual de uso e manutenção:
+  - rotinas diária, mensal, trimestral e anual;
+  - o que vigiar (workflow de ping desativado pelo GitHub, pausa do Supabase);
+  - solução de problemas, ajustes comuns, backup e segurança.
+- Tags Git de todas as versões (`v0.1.0` … `v1.0.0`), conforme docs/CONVENCOES.md.
+
+### Alterado
+- Versão do app e do `package.json` para 1.0.0.
+- Critérios de aceite CA-01, CA-04 e CA-05 marcados como validados no celular.
+
 ## [0.5.0] — 2026-09-24 — Fase 5: Saúde financeira, exportação e Skill do Claude
 
 ### Adicionado

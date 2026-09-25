@@ -105,7 +105,7 @@ erDiagram
 | `substituir_insights(competencia, alertas)` | Grava os alertas do mês do motor de regras, mantendo os lidos (sql/005) |
 | `ping()` | Mantém o Supabase gratuito ativo |
 
-## Estrutura de pastas (alvo ao final das fases)
+## Estrutura de pastas
 
 ```
 /                       ← publicado no GitHub Pages
