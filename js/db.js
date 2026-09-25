@@ -497,7 +497,7 @@ export async function dadosDeduplicacao({ userId, inicio, fim, cartaoId = null, 
     executar(cliente.from('despesas')
       .select('id, data_compra, valor_total_centavos, forma_pagamento, cartao_id, descricao, local_nome, origem')
       .eq('user_id', userId).is('excluido_em', null).gte('data_compra', inicio).lte('data_compra', fim), 'Importação: gastos do período'),
-    executar(cliente.from('receitas').select('id, data, valor_centavos, descricao')
+    executar(cliente.from('receitas').select('id, data, valor_centavos, descricao, origem')
       .eq('user_id', userId).is('excluido_em', null).gte('data', inicio).lte('data', fim), 'Importação: ganhos do período'),
     cartaoId
       ? executar(cliente.from('parcelas').select('despesa_id, competencia, valor_centavos, cartao_id')

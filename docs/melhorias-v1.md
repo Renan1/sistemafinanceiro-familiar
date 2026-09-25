@@ -7,6 +7,7 @@ Cada melhoria é uma versão, no fluxo de sempre: Pull Request → testes → **
 | **v1.1** | Compra parcelada **com juros** (informar pelo valor da parcela + preço à vista) | `sql/006_v11_parcela_com_juros.sql` |
 | **v1.2** | Compras da **Carteira do iPhone** direto no app (Atalhos + caixa de entrada) | `sql/007_v12_carteira_iphone.sql` |
 | **v1.3** | **Importar extrato e fatura** (Nubank, Itaú, OFX) com categoria sugerida, sem duplicar | `sql/008_v13_importar_extrato.sql` |
+| **v1.3.1** | Parcelas "/mês" na lista, recorrências com valor variável, categoria **Financiamentos** | `sql/009_v131_financiamentos.sql` |
 
 > A Carteira saiu antes da importação de extrato (que depende dos arquivos dos bancos), por isso virou a v1.2.
 
@@ -202,3 +203,38 @@ Quando os testes da v1.3 estiverem ok:
    - o dia a dia continua pelo app e pela Carteira. O que já foi lançado aparece como "🟰 Parece já lançado" e não duplica.
 
 > Recorrências e importação convivem: se o salário é uma recorrência, o "SISPAG" do extrato aparece como "🟰 Parece já lançado". Deixe desmarcado.
+
+---
+
+## v1.3.1 — Parcelas na lista, recorrências variáveis e Financiamentos
+
+### Passo 1 — Banco (antes do merge)
+Supabase → **SQL Editor → New query** → cole `sql/009_v131_financiamentos.sql` → **Run** → a conferência deve vir **OK**. Isso cria a categoria **🏦 Financiamentos**.
+
+### Passo 2 — Merge do PR → "✨ Nova versão disponível".
+
+### O que muda
+- **Lançamentos:**
+  - compra parcelada mostra **"R$ 500,00/mês"**, com "12x · total R$ 6.000,00" nos detalhes;
+  - o card **"Gastos no mês"** é o mesmo número do Painel: pelas faturas, a parcelada pesa só a parcela do mês;
+  - uma nota logo abaixo mostra o total das compras lançadas;
+  - com algum filtro ligado (tipo, categoria…), o card volta a somar a lista ("Compras").
+- **Financiamentos:**
+  - na importação do extrato, troque a categoria das parcelas dos financiamentos (ex.: o boleto do banco do financiamento do carro) para **🏦 Financiamentos** uma vez: o app aprende;
+  - elas entram como **Fixo**;
+  - boletos de "financeira", "CFI", "consórcio" e "empréstimo" já vêm nessa categoria;
+  - **não crie recorrência** para financiamento cujo valor muda uns centavos todo mês: deixe entrar pelo extrato.
+- **Pensão, aluguel e salário com valor variável:**
+  - se existe uma **recorrência** (ex.: Pensão R$ 1.000) e o extrato traz R$ 1.050, a linha aparece em "🟰 Parece já lançado", com os dois valores;
+  - deixe **desmarcada** e corrija o valor do lançamento em **Lançamentos**, tocando nele;
+  - vale para diferenças de até 10% e até 5 dias.
+- **Fixos:** na importação, Financiamentos, Moradia, Contas, Assinaturas, Salário, Pró-labore e Aluguel entram como **Fixo**.
+
+### Roteiro de testes
+- [ ] Rodou o `009` (conferência **OK**). Em **Mais → Categorias** aparece **🏦 Financiamentos**.
+- [ ] **Lançamentos:** uma compra parcelada mostra "R$ …/mês" e "16x · total …". O card "Gastos no mês" bate com o **Painel** do mesmo mês.
+- [ ] **Importar** o extrato da conta:
+  - a linha da pensão (valor diferente da recorrência) aparece em "🟰 Parece já lançado" com os dois valores;
+  - um financiamento de banco com "CFI" no nome já vem em Financiamentos;
+  - troque o outro financiamento para Financiamentos.
+- [ ] Depois de importar: os financiamentos aparecem com "fixo" em Lançamentos.

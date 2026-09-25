@@ -433,6 +433,7 @@ select.campo { appearance: none; -webkit-appearance: none; }
 .totais { display: flex; gap: 8px; margin: 0 0 10px; font-size: 14px; }
 .totais span { flex: 1; background: var(--superficie); border-radius: var(--raio-p); padding: 8px 10px; }
 .totais strong { display: block; font-variant-numeric: tabular-nums; }
+.totais small { display: block; font-size: 11px; color: var(--texto-2); }
 .item.clicavel { cursor: pointer; }
 .item.clicavel:active { background: var(--superficie-2); }
 .item-seta { color: var(--texto-2); }
