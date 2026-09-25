@@ -2,6 +2,28 @@
 
 Todas as mudanças relevantes do projeto. Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/), versões em [SemVer](https://semver.org/lang/pt-BR/).
 
+## [1.1.0] — 2026-09-25 — Compra parcelada com juros
+
+### Adicionado
+- **Gasto → Crédito**: escolha entre **"Valor total"** e **"Valor da parcela"**.
+  - Com "12x de R$ 189,90", o total vira R$ 2.278,80 e as 12 parcelas saem iguais às da loja.
+- **Preço à vista** (opcional, com 2x ou mais): mostra "Juros: R$ 278,80 (13,9% a mais) · ≈ 2,1% ao mês".
+- `sql/006_v11_parcela_com_juros.sql`:
+  - nova coluna `despesas.valor_a_vista_centavos`, que precisa ser maior que zero e não pode passar do total;
+  - `salvar_despesa()` passa a gravar essa coluna.
+- `js/parcelas.js`:
+  - `totalPelaParcela()`;
+  - `jurosDaCompra()`, com a taxa ao mês pela tabela Price.
+- **Lançamentos** mostram "juros R$ X".
+- CSV com coluna `juros`.
+- Export para o Claude com `despesas[].juros`. A Skill passa a comentar os juros pagos.
+- `docs/melhorias-v1.md`: guia de atualização e testes das versões 1.x.
+- Testes:
+  - 5 JS: parcela, juros e taxa;
+  - 2 de exportação;
+  - 6 do banco;
+  - 8 no navegador, mais a regressão das Fases 2 a 5 (11, 14, 10 e 13).
+
 ## [1.0.1] — 2026-09-25 — Zerar os dados de teste
 
 ### Alterado

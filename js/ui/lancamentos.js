@@ -195,6 +195,10 @@ export function montarLancamentos(raiz, { editar }) {
         const cartao = cartaoPorId(r.cartao_id);
         if (cartao) detalhes.push(cartao.apelido);
         if (r.qtd_parcelas > 1) detalhes.push(`${r.qtd_parcelas}x`);
+        // v1.1: compra com juros informada → "juros R$ 278,80"
+        if (r.valor_a_vista_centavos && r.valor_total_centavos > r.valor_a_vista_centavos) {
+          detalhes.push(`juros ${moeda(r.valor_total_centavos - r.valor_a_vista_centavos)}`);
+        }
       }
       if (r.latitude != null) detalhes.push('📍');
     }

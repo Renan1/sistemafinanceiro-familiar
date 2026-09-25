@@ -26,7 +26,7 @@ const despesas = [
   d('4','r','2026-10-04',68500,'merc','debito',{ local_nome:'Supermercado' }),
   d('5','c','2026-10-18',41200,'merc','pix'),
   ...Array.from({ length: 18 }, (_, i) => d(`6${i}`, i % 2 ? 'c' : 'r', `2026-10-${String(2 + i).padStart(2,'0')}`, 1800 + (i % 5) * 450, 'deliv', 'credito', { cartao_id: i % 2 ? 'k2' : 'k1', descricao: 'Lanche' })),
-  d('7','r','2026-10-20',360000,'lazer','credito',{ cartao_id:'k1', qtd_parcelas: 6, descricao:'Passagens férias' }),
+  d('7','r','2026-10-20',360000,'lazer','credito',{ cartao_id:'k1', qtd_parcelas: 6, descricao:'Passagens férias', valor_a_vista_centavos: 330000 }),
   d('8','c','2026-10-22',32000,'saude','pix',{ descricao:'Farmácia' }),
   d('9','r','2026-10-12',28000,'transp','credito',{ cartao_id:'k1', descricao:'Combustível' }),
 ];

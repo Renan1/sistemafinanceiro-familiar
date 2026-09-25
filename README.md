@@ -20,11 +20,13 @@ PWA (app que roda no navegador e é instalado na Tela de Início do celular) + S
 | 4 | Dashboard com conciliação, gráficos e mapa | ✅ v0.4.0 |
 | 5 | Saúde financeira (regras, tarefas), exportação, Skill do Claude | ✅ v0.5.0 |
 | — | **Sistema completo em uso** (validado no celular) + manual de operação | ✅ **v1.0.0** |
+| 1.1 | Compra parcelada com juros (valor da parcela + preço à vista) | 🔄 v1.1.0 |
 
 ## Documentação
 
 | Documento | Conteúdo |
 |---|---|
+| [docs/melhorias-v1.md](docs/melhorias-v1.md) | Melhorias depois da v1.0 (juros, importar extrato, Carteira do iPhone): SQL, uso e testes |
 | [docs/OPERACAO.md](docs/OPERACAO.md) | **Uso e manutenção**: rotinas, o que vigiar, quando algo der errado, backup |
 | [docs/REQUISITOS.md](docs/REQUISITOS.md) | **O que** o sistema faz (requisitos numerados RF/RNF/RN, critérios de aceite) |
 | [docs/DECISOES.md](docs/DECISOES.md) | **Por que** cada escolha técnica foi feita |
@@ -91,6 +93,7 @@ sql/                  scripts do banco — rodar no Supabase, em ordem
   003_verificacao.sql   confere se a segurança ficou OK
   004_fase3_recorrencias.sql  alterar valor de recorrência a partir de um mês
   005_fase5_saude.sql   gravar alertas do mês (mantendo os lidos)
+  006_v11_parcela_com_juros.sql  preço à vista (juros) nas compras parceladas
   manutencao/           scripts avulsos (ex.: zerar lançamentos de teste)
 claude-skill/          Skill "Consultor Financeiro Familiar" (SKILL.md, formato, exemplos, MCP)
 scripts/              utilitários (gera o exemplo da Skill com o código do app)

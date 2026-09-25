@@ -15,7 +15,7 @@
  */
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { calcularParcelas, diasNoMes, somarMeses } from '../../js/parcelas.js';
+import { calcularParcelas, diasNoMes, somarMeses, totalPelaParcela, jurosDaCompra } from '../../js/parcelas.js';
 
 const NUBANK = { dia_fechamento: 5, dia_vencimento: 12 };
 const ITAU = { dia_fechamento: 28, dia_vencimento: 5 };
@@ -217,5 +217,38 @@ describe('Validações (mesmas regras do banco)', () => {
 
   test('forma de pagamento desconhecida é recusada', () => {
     assert.throws(() => calcularParcelas({ ...base, formaPagamento: 'cheque' }), /inválida/);
+  });
+});
+
+describe('Compra com juros informada pela parcela (v1.1 — RF-15)', () => {
+  const cartao = { dia_fechamento: 5, dia_vencimento: 12 };
+
+  test('12x de R$ 189,90 → total R$ 2.278,80 e 12 parcelas iguais à da loja', () => {
+    const total = totalPelaParcela(18990, 12);
+    assert.equal(total, 227880);
+    const ps = calcularParcelas({ valorTotalCentavos: total, qtdParcelas: 12, dataCompra: '2026-09-25', formaPagamento: 'credito', cartao });
+    assert.equal(ps.length, 12);
+    assert.ok(ps.every((p) => p.valor_centavos === 18990));
+  });
+
+  test('parcela inválida ou parcelas fora de 1..24 dão erro claro', () => {
+    assert.throws(() => totalPelaParcela(0, 3), /maior que zero/);
+    assert.throws(() => totalPelaParcela(1000, 25), /1 a 24/);
+  });
+
+  test('juros e taxa ao mês: R$ 1.000 à vista ou 12x de R$ 94,56 ≈ 2% a.m.', () => {
+    const r = jurosDaCompra({ totalCentavos: 9456 * 12, aVistaCentavos: 100000, qtdParcelas: 12 });
+    assert.equal(r.jurosCentavos, 13472);
+    assert.equal(r.jurosPct, 13.5);
+    assert.equal(r.taxaMensalPct, 2);
+  });
+
+  test('sem juros (à vista = total) → juros zero e sem taxa', () => {
+    assert.deepEqual(jurosDaCompra({ totalCentavos: 60000, aVistaCentavos: 60000, qtdParcelas: 6 }),
+      { jurosCentavos: 0, jurosPct: 0, taxaMensalPct: null });
+  });
+
+  test('à vista maior que o total é recusado', () => {
+    assert.throws(() => jurosDaCompra({ totalCentavos: 50000, aVistaCentavos: 60000, qtdParcelas: 5 }), /não pode ser maior/);
   });
 });

@@ -13,6 +13,11 @@
  * Ao salvar, o gasto vai PRIMEIRO para o aparelho (js/offline.js) e a tela
  * confirma na hora; depois tenta enviar (js/sync.js).
  *
+ * COMPRA COM JUROS (v1.1 — RF-15): no crédito dá para digitar o VALOR DA
+ * PARCELA ("12x de R$ 189,90") em vez do total — o total vira parcela × N e
+ * as parcelas saem iguais às da loja. Opcionalmente, o preço à vista mostra
+ * quanto se paga de juros (e a taxa ao mês).
+ *
  * MODO EDIÇÃO (Fase 3 — RF-41): aberta a partir de Lançamentos com um gasto
  * existente. Mesmo formulário, preenchido; "Salvar alterações" reenvia com o
  * MESMO id (o banco atualiza e regenera as parcelas — RN-17) e "Excluir"
@@ -21,8 +26,8 @@
  */
 import { h, trocar, avisar, vibrar, confirmar } from './dom.js';
 import { teclado, mostradorValor, chips, gradeCategorias, segmentado } from './componentes.js';
-import { calcularParcelas, MAX_PARCELAS } from '../parcelas.js';
-import { moeda, mesAbrev, hojeSP } from '../formato.js';
+import { calcularParcelas, MAX_PARCELAS, totalPelaParcela, jurosDaCompra } from '../parcelas.js';
+import { moeda, mesAbrev, hojeSP, percentual, lerValorBR, valorParaCampo } from '../formato.js';
 import { validarGasto } from '../validacao.js';
 import { iniciarCaptura } from '../geo.js';
 import { enfileirar, listarFila, registrarUsoCategoria, novoId } from '../offline.js';
@@ -62,6 +67,8 @@ export function montarNovoGasto(raiz, { navegar, edicao = null }) {
     data: edicao.data_compra,
     descricao: edicao.descricao ?? '',
     localNome: edicao.local_nome ?? '',
+    modoValor: 'total',                       // na edição o teclado mostra o total
+    aVista: edicao.valor_a_vista_centavos ?? null,
   } : {
     centavos: 0,
     forma: lembrar.ler('ultima-forma', 'pix'),
@@ -72,7 +79,14 @@ export function montarNovoGasto(raiz, { navegar, edicao = null }) {
     data: hojeSP(),
     descricao: '',
     localNome: '',
+    modoValor: 'total',   // 'total' | 'parcela' (só no crédito)
+    aVista: null,         // preço à vista (centavos) — opcional, só com 2x ou mais
   };
+
+  /** O teclado digita a parcela? (só no crédito e no modo "parcela") */
+  const digitandoParcela = () => s.forma === 'credito' && s.modoValor === 'parcela';
+  /** Total da compra em centavos, qualquer que seja o modo. */
+  const totalCentavos = () => (digitandoParcela() && s.centavos > 0 ? totalPelaParcela(s.centavos, s.parcelas) : s.centavos);
 
   /** Cartões disponíveis; na edição inclui o cartão original mesmo se arquivado. */
   const listaCartoes = () => {
@@ -126,6 +140,19 @@ export function montarNovoGasto(raiz, { navegar, edicao = null }) {
   });
 
   const previa = h('p', { class: 'previa-parcelas' });
+  const modoValor = segmentado({
+    rotulo: 'O valor digitado é', valor: s.modoValor,
+    opcoes: [{ valor: 'total', rotulo: 'Valor total' }, { valor: 'parcela', rotulo: 'Valor da parcela' }],
+    aoEscolher: (v) => { s.modoValor = v; atualizarPrevia(); },
+  });
+  const textoJuros = h('p', { class: 'texto-juros' });
+  const campoAVista = h('input', {
+    type: 'text', inputmode: 'decimal', class: 'campo campo-a-vista', placeholder: 'Ex.: 2.000,00',
+    'aria-label': 'Preço à vista', value: s.aVista ? valorParaCampo(s.aVista) : '',
+    oninput: (e) => { s.aVista = lerValorBR(e.target.value); atualizarJuros(); },
+  });
+  const areaJuros = h('div', { class: 'area-juros' },
+    h('span', { class: 'rotulo-campo' }, 'Preço à vista (opcional — para ver os juros)'), campoAVista, textoJuros);
   const seletorParcelas = h('select', {
     class: 'seletor-parcelas', 'aria-label': 'Parcelas',
     onchange: (e) => { s.parcelas = Number(e.target.value); atualizarPrevia(); },
@@ -151,7 +178,8 @@ export function montarNovoGasto(raiz, { navegar, edicao = null }) {
       })),
       aoEscolher: (id) => { s.cartaoId = id; lembrar.gravar('ultimo-cartao', id); atualizarPrevia(); },
     });
-    trocar(areaCredito, chipsCartao.elemento, h('div', { class: 'linha-parcelas' }, seletorParcelas, previa));
+    trocar(areaCredito, chipsCartao.elemento, modoValor.elemento,
+      h('div', { class: 'linha-parcelas' }, seletorParcelas, previa), areaJuros);
     atualizarPrevia();
   }
 
@@ -161,21 +189,27 @@ export function montarNovoGasto(raiz, { navegar, edicao = null }) {
     const cartao = cartaoPorId(s.cartaoId);
     trocar(seletorParcelas, Array.from({ length: MAX_PARCELAS }, (_, i) => {
       const n = i + 1;
-      const valorParcela = s.centavos >= n ? moeda(Math.floor(s.centavos / n)) : '';
-      return h('option', { value: String(n), selected: n === s.parcelas }, n === 1 ? `1x ${valorParcela}` : `${n}x ${valorParcela}`);
+      // Modo parcela: "12x = R$ 2.278,80" (total); modo total: "12x R$ 83,33" (parcela).
+      const rotulo = digitandoParcela()
+        ? (s.centavos > 0 ? `= ${moeda(s.centavos * n)}` : '')
+        : (s.centavos >= n ? moeda(Math.floor(s.centavos / n)) : '');
+      return h('option', { value: String(n), selected: n === s.parcelas }, `${n}x ${rotulo}`);
     }));
+    atualizarJuros();
     if (!cartao || s.centavos === 0) {
       previa.textContent = cartao ? `Fecha dia ${cartao.dia_fechamento} · vence dia ${cartao.dia_vencimento}` : '';
+      previa.classList.remove('erro');
       return;
     }
     try {
       const ps = calcularParcelas({
-        valorTotalCentavos: s.centavos, qtdParcelas: s.parcelas, dataCompra: s.data,
+        valorTotalCentavos: totalCentavos(), qtdParcelas: s.parcelas, dataCompra: s.data,
         formaPagamento: 'credito', cartao,
       });
+      const total = digitandoParcela() && ps.length > 1 ? ` = ${moeda(totalCentavos())}` : '';
       const texto = ps.length === 1
         ? `1x de ${moeda(ps[0].valor_centavos)} — fatura de ${mesAbrev(ps[0].competencia)}`
-        : `${ps.length}x de ${moeda(ps[ps.length - 1].valor_centavos)} — 1ª em ${mesAbrev(ps[0].competencia)}`;
+        : `${ps.length}x de ${moeda(ps[ps.length - 1].valor_centavos)}${total} — 1ª em ${mesAbrev(ps[0].competencia)}`;
       const ajuste = ps.length > 1 && ps[0].valor_centavos !== ps[1].valor_centavos
         ? ` (1ª de ${moeda(ps[0].valor_centavos)})` : '';
       previa.textContent = texto + ajuste;
@@ -183,6 +217,22 @@ export function montarNovoGasto(raiz, { navegar, edicao = null }) {
     } catch (e) {
       previa.textContent = e.message;
       previa.classList.add('erro');
+    }
+  }
+
+  /** "Juros: R$ 278,80 (13,9%) · ≈ 2,1% ao mês" — só no crédito com 2x ou mais. */
+  function atualizarJuros() {
+    areaJuros.hidden = s.forma !== 'credito' || s.parcelas < 2;
+    textoJuros.classList.remove('erro');
+    if (areaJuros.hidden || !s.aVista || s.centavos === 0) { textoJuros.textContent = ''; return; }
+    try {
+      const j = jurosDaCompra({ totalCentavos: totalCentavos(), aVistaCentavos: s.aVista, qtdParcelas: s.parcelas });
+      textoJuros.textContent = j.jurosCentavos === 0
+        ? 'Sem juros ✓'
+        : `Juros: ${moeda(j.jurosCentavos)} (${percentual(j.jurosPct)} a mais)${j.taxaMensalPct ? ` · ≈ ${percentual(j.taxaMensalPct)} ao mês` : ''}`;
+    } catch (e) {
+      textoJuros.textContent = e.message;
+      textoJuros.classList.add('erro');
     }
   }
 
@@ -217,10 +267,14 @@ export function montarNovoGasto(raiz, { navegar, edicao = null }) {
     edicao ? 'Salvar alterações' : 'Salvar gasto');
 
   async function salvar() {
+    const total = totalCentavos();
+    // Preço à vista só vale em compra parcelada no crédito.
+    const aVista = s.forma === 'credito' && s.parcelas > 1 && s.aVista ? s.aVista : null;
     const erros = validarGasto({
-      valorCentavos: s.centavos, categoriaId: s.categoriaId, formaPagamento: s.forma,
+      valorCentavos: total, categoriaId: s.categoriaId, formaPagamento: s.forma,
       cartaoId: s.cartaoId, qtdParcelas: s.parcelas, data: s.data,
     });
+    if (aVista && aVista > total) erros.push('O preço à vista não pode ser maior que o total parcelado.');
     if (erros.length) {
       vibrar(60);
       avisar(erros[0], { tipo: 'aviso' });
@@ -231,7 +285,7 @@ export function montarNovoGasto(raiz, { navegar, edicao = null }) {
     const cartao = s.forma === 'credito' ? cartaoPorId(s.cartaoId) : undefined;
     try {
       parcelas = calcularParcelas({
-        valorTotalCentavos: s.centavos, qtdParcelas: s.parcelas, dataCompra: s.data,
+        valorTotalCentavos: total, qtdParcelas: s.parcelas, dataCompra: s.data,
         formaPagamento: s.forma, cartao,
       });
     } catch (e) {
@@ -245,7 +299,8 @@ export function montarNovoGasto(raiz, { navegar, edicao = null }) {
     const dados = {
       id,
       data_compra: s.data,
-      valor_total_centavos: s.centavos,
+      valor_total_centavos: total,
+      valor_a_vista_centavos: aVista,
       descricao: s.descricao.trim() || null,
       categoria_id: s.categoriaId,
       forma_pagamento: s.forma,
@@ -273,14 +328,14 @@ export function montarNovoGasto(raiz, { navegar, edicao = null }) {
     }
 
     vibrar(15);
-    log.info('gasto', edicao ? 'Gasto alterado' : 'Gasto salvo', { id, valor: s.centavos, forma: s.forma, parcelas: s.parcelas, comLocal: Boolean(pos) });
+    log.info('gasto', edicao ? 'Gasto alterado' : 'Gasto salvo', { id, valor: total, forma: s.forma, parcelas: s.parcelas, modo: s.modoValor, comJuros: Boolean(aVista), comLocal: Boolean(pos) });
     if (edicao) {
       avisar('Alteração salva ✓', { tipo: 'ok' });
       sincronizar('editar');
       navegar('#/lancamentos');
       return;
     }
-    const aviso = avisar(`Salvo ✓ ${moeda(s.centavos)} — enviando…`, { tipo: 'ok', duracao: 4000 });
+    const aviso = avisar(`Salvo ✓ ${moeda(total)} — enviando…`, { tipo: 'ok', duracao: 4000 });
 
     await registrarUsoCategoria(s.categoriaId);
     estado.usoCategorias[s.categoriaId] = (estado.usoCategorias[s.categoriaId] ?? 0) + 1;
@@ -304,6 +359,10 @@ export function montarNovoGasto(raiz, { navegar, edicao = null }) {
     s.localNome = '';
     s.natureza = 'variavel';
     s.data = hojeSP();
+    s.modoValor = 'total';
+    s.aVista = null;
+    modoValor.definir('total');
+    campoAVista.value = '';
     campoDescricao.value = '';
     campoLocal.value = '';
     campoData.value = s.data;
@@ -363,6 +422,6 @@ export function montarNovoGasto(raiz, { navegar, edicao = null }) {
 export function camposDespesa(d) {
   const campos = ['id', 'data_compra', 'valor_total_centavos', 'descricao', 'categoria_id', 'forma_pagamento',
     'cartao_id', 'qtd_parcelas', 'natureza', 'recorrencia_id', 'competencia_recorrencia', 'latitude',
-    'longitude', 'precisao_metros', 'local_nome', 'origem', 'observacao'];
+    'longitude', 'precisao_metros', 'local_nome', 'origem', 'observacao', 'valor_a_vista_centavos'];
   return Object.fromEntries(campos.map((c) => [c, d[c] ?? null]));
 }

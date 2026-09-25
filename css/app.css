@@ -247,6 +247,13 @@ body.sem-abas .abas { display: none; }
 }
 .previa-parcelas { margin: 0; font-size: 14px; color: var(--texto-2); }
 .previa-parcelas.erro { color: var(--negativo); }
+/* v1.1: "Valor total | Valor da parcela" e preço à vista (juros) */
+.area-credito .segmentado { margin: 8px 0; }
+.area-juros { margin-top: 8px; }
+.area-juros .campo { margin-bottom: 4px; }
+.rotulo-campo { display: block; font-size: 13px; color: var(--texto-2); margin: 0 0 4px 2px; }
+.texto-juros { margin: 0; font-size: 14px; font-weight: 600; color: var(--texto-2); }
+.texto-juros.erro { color: var(--negativo); }
 
 /* ---- Categorias ------------------------------------------------------------ */
 .rotulo { font-size: 13px; font-weight: 600; text-transform: uppercase; color: var(--texto-2); margin: 10px 0 6px; letter-spacing: .3px; }

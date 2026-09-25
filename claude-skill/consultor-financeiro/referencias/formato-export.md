@@ -44,7 +44,7 @@ Gerado pelo app em **Mais → Exportar dados → Gerar JSON do mês** (código: 
 `data`, `pessoa`, `categoria`, `descricao`, `valor`, `natureza` (`fixa`/`variavel`), `recorrente` (veio de uma recorrência).
 
 ### `despesas[]`
-`data_compra`, `pessoa`, `categoria`, `descricao`, `valor_total` (valor cheio da compra), `forma_pagamento` (PIX, Débito, Crédito, Dinheiro, Boleto, Outro), `cartao` (apelido), `parcelas` (1 a 24), `natureza`, `recorrente`, `local` (nome do lugar, se informado).
+`data_compra`, `pessoa`, `categoria`, `descricao`, `valor_total` (valor cheio da compra), `forma_pagamento` (PIX, Débito, Crédito, Dinheiro, Boleto, Outro), `cartao` (apelido), `parcelas` (1 a 24), `natureza`, `recorrente`, `local` (nome do lugar, se informado), `juros` (centavos pagos a mais que o preço à vista numa compra parcelada; `null` = preço à vista não informado).
 
 > Uma compra de R$ 1.200 em 6x aparece aqui com `valor_total: 120000` e `parcelas: 6`, mas pesa só R$ 200 no mês em `resumo_mensal` e `gastos_por_categoria`.
 

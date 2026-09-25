@@ -14,7 +14,7 @@ const dados = {
   resumo: [{ competencia: OUT, user_id: null, receitas_centavos: 1000000, despesas_centavos: 300000, despesas_fixas_centavos: 100000, despesas_variaveis_centavos: 200000, despesas_cartao_centavos: 50000, saldo_centavos: 700000, taxa_poupanca_pct: 70 }],
   despesas: [
     { id: 'd1', user_id: 'r', data_compra: '2026-10-03', valor_total_centavos: 12345, descricao: 'Mercado; "promo"', categoria_id: 'merc', forma_pagamento: 'pix', qtd_parcelas: 1, natureza: 'variavel', latitude: -23.5, longitude: -46.6, local_nome: 'Mercado X' },
-    { id: 'd2', user_id: 'c', data_compra: '2026-10-10', valor_total_centavos: 90000, descricao: null, categoria_id: 'laz', forma_pagamento: 'credito', cartao_id: 'k', qtd_parcelas: 3, natureza: 'variavel' },
+    { id: 'd2', user_id: 'c', data_compra: '2026-10-10', valor_total_centavos: 90000, descricao: null, categoria_id: 'laz', forma_pagamento: 'credito', cartao_id: 'k', qtd_parcelas: 3, natureza: 'variavel', valor_a_vista_centavos: 81000 },
   ],
   receitas: [{ id: 'r1', user_id: 'r', data: '2026-10-05', valor_centavos: 1000000, categoria_id: 'sal', natureza: 'fixa', recorrencia_id: 'rec' }],
   parcelas: [
@@ -40,6 +40,8 @@ describe('Export JSON para o Claude', () => {
     assert.equal(exp.despesas[1].categoria, 'Lazer');
     assert.equal(exp.despesas[1].cartao, 'Nubank');
     assert.equal(exp.despesas[1].forma_pagamento, 'Crédito');
+    assert.equal(exp.despesas[1].juros, 9000, 'v1.1: juros = total − preço à vista');
+    assert.equal(exp.despesas[0].juros, null, 'sem preço à vista → juros null');
     assert.equal(exp.receitas[0].recorrente, true);
     assert.equal(exp.resumo_mensal[0].pessoa, 'Família');
   });
@@ -64,13 +66,13 @@ describe('CSV', () => {
   const linhas = csv.replace('﻿', '').trim().split('\r\n');
   test('BOM para acentos no Excel e separador ";"', () => {
     assert.ok(csv.startsWith('﻿'));
-    assert.equal(linhas[0], 'tipo;data;pessoa;categoria;descricao;forma_pagamento;cartao;parcelas;natureza;local;valor');
+    assert.equal(linhas[0], 'tipo;data;pessoa;categoria;descricao;forma_pagamento;cartao;parcelas;natureza;local;valor;juros');
   });
   test('ordena por data, vírgula decimal e escapa ";" e aspas', () => {
     assert.equal(linhas.length, 4);
-    assert.equal(linhas[1], 'gasto;2026-10-03;Renan;Alimentação/Mercado;"Mercado; ""promo""";PIX;;1;variavel;Mercado X;123,45');
-    assert.equal(linhas[2], 'ganho;2026-10-05;Renan;Salário;;;;;fixa;;10000,00');
-    assert.ok(linhas[3].endsWith('Crédito;Nubank;3;variavel;;900,00'));
+    assert.equal(linhas[1], 'gasto;2026-10-03;Renan;Alimentação/Mercado;"Mercado; ""promo""";PIX;;1;variavel;Mercado X;123,45;');
+    assert.equal(linhas[2], 'ganho;2026-10-05;Renan;Salário;;;;;fixa;;10000,00;');
+    assert.ok(linhas[3].endsWith('Crédito;Nubank;3;variavel;;900,00;90,00'), 'juros = total − à vista');
   });
   test('nome do arquivo', () => assert.equal(nomeArquivo('2026-10-17', 'csv'), 'financas-2026-10.csv'));
 });
