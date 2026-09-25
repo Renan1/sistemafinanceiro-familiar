@@ -86,6 +86,7 @@ erDiagram
 | auditoria | — | a família | ninguém (só o banco escreve) |
 | caixa_entrada (v1.2) | pessoa | a família | só o dono (status); inserir só pelo Atalho |
 | atalhos (v1.2) | pessoa | só o dono (sem o hash) | só o dono (revogar); criar só pela função |
+| regras_categoria (v1.3) | família | a família | qualquer membro (aprendidas na importação) |
 
 ### Views do dashboard
 
@@ -130,6 +131,8 @@ erDiagram
 │  ├─ saude.js          roda as regras e grava alertas/tarefas
 │  ├─ exportacao.js     export JSON/CSV e importação de tarefas do Claude
 │  ├─ carteira.js       compra da Carteira do iPhone → sugestão de gasto (v1.2)
+│  ├─ importacao.js     importar extrato/fatura: ler, classificar, não duplicar (v1.3)
+│  ├─ planilha-worker.js  lê .xls/.xlsx num Web Worker isolado (v1.3)
 │  ├─ dashboard.js      cálculos do Painel (Fase 4)
 │  ├─ mapa.js · libs.js mapa e bibliotecas sob demanda (Fase 4)
 │  └─ ui/               telas

@@ -6,7 +6,7 @@ Cada melhoria é uma versão, no fluxo de sempre: Pull Request → testes → **
 |---|---|---|
 | **v1.1** | Compra parcelada **com juros** (informar pelo valor da parcela + preço à vista) | `sql/006_v11_parcela_com_juros.sql` |
 | **v1.2** | Compras da **Carteira do iPhone** direto no app (Atalhos + caixa de entrada) | `sql/007_v12_carteira_iphone.sql` |
-| v1.3 | Importar extrato/fatura (Itaú, Nubank) com classificação automática | (a definir) |
+| **v1.3** | **Importar extrato e fatura** (Nubank, Itaú, OFX) com categoria sugerida, sem duplicar | `sql/008_v13_importar_extrato.sql` |
 
 > A Carteira saiu antes da importação de extrato (que depende dos arquivos dos bancos), por isso virou a v1.2.
 
@@ -94,9 +94,17 @@ Precisa do **iOS 17 ou mais novo**.
      | Chave | Valor |
      |---|---|
      | `p_token` | cole a **sua chave pessoal** |
-     | `p_valor` | toque em *Variáveis* → **Entrada do Atalho** → escolha **Quantia** |
+     | `p_valor` | **Entrada do Atalho** → escolha **Valor** |
      | `p_estabelecimento` | **Entrada do Atalho** → **Comerciante** |
-     | `p_cartao` | **Entrada do Atalho** → **Cartão ou Passe** |
+     | `p_cartao` | **Entrada do Atalho** → **Cartão ou Tiquete** |
+
+     **Como inserir a variável** (em cada linha):
+     1. Toque no campo **Valor** da linha (o da direita, não o nome da chave).
+     2. Na faixa **acima do teclado**, toque em **Entrada do Atalho**. Se não aparecer, arraste a faixa para o lado. Ela **não** fica dentro de "Selecionar Variável".
+     3. Um botão azul "Entrada do Atalho" entra no campo. **Toque nele**. Aparece a lista da *Transação* (Cartão ou Tiquete, Comerciante, Valor, Nome); escolha o item da tabela.
+     4. O botão passa a mostrar o nome escolhido (ex.: "Valor").
+
+     > Em algumas versões do iOS os nomes mudam: **Valor** pode aparecer como *Quantia*, e **Cartão ou Tiquete** como *Cartão ou Passe*. Não use **Nome**.
 7. **OK / Concluído.**
 8. **Teste:** pague algo pequeno com a Carteira. Abra o app, e em Gasto deve aparecer "📥 1 compra da Carteira para lançar".
 
@@ -104,7 +112,7 @@ Precisa do **iOS 17 ou mais novo**.
 >
 > Se o atalho der erro, o próprio Atalhos mostra a mensagem do servidor:
 > - *"Chave inválida ou revogada"*: cole a chave de novo ou crie outra.
-> - *"Valor inválido"*: confira se `p_valor` está com a variável **Quantia**.
+> - *"Valor inválido"*: confira se `p_valor` está com a variável **Valor** da Entrada do Atalho.
 
 ### Uso no dia a dia
 - **Gasto** → "📥 N compras da Carteira para lançar" → **Lançar**. Confira a categoria (e o cartão/forma) → **Salvar gasto**. O app volta para a caixa com as próximas.
@@ -123,3 +131,74 @@ Precisa do **iOS 17 ou mais novo**.
 - [ ] **Descartar** uma compra → some da caixa e não vira gasto.
 - [ ] **Revogar** a chave → a próxima compra dá erro no Atalhos. Depois crie outra chave e atualize o `p_token` no atalho.
 - [ ] Camilla: repetir o passo 3 no iPhone dela, com a chave dela.
+
+---
+
+## v1.3 — Importar extrato e fatura (Nubank, Itaú, OFX)
+
+**Como funciona:** em **Mais → Importar extrato ou fatura** você escolhe o arquivo exportado do banco.
+- O app lê o arquivo **no próprio aparelho**: ele não vai para lugar nenhum.
+- Antes de gravar, mostra uma **prévia** dividida em abas:
+
+| Aba | O que é | Vem marcado? |
+|---|---|---|
+| ✅ Para importar | Lançamentos novos, com a **categoria sugerida** | Sim |
+| 🟰 Parece já lançado | Mesmo valor e data (ou mesma parcela no mesmo cartão) de algo que já está no app: digitado, pela Carteira, por recorrência ou por outra importação | Não; marque se for outro |
+| ⏭️ Ignorados | Pagamento de fatura, aplicação e resgate, rendimento automático, compra estornada, "Controle de saldo" | Não |
+| ✔️ Já importados | O mesmo arquivo (ou a mesma linha) importado antes | Não |
+
+- **Trocar a categoria** de uma linha troca todas as linhas do **mesmo lugar**. Ao importar, o app **aprende**: na próxima importação, esse lugar já vem com a categoria certa, para os dois.
+- **Parcelas:** "Parcela 9/12" da fatura vira **uma** compra com as parcelas 9 a 12, nos meses certos. Assim o Painel já mostra o que está comprometido. No mês seguinte, a "Parcela 10/12" é reconhecida como já lançada.
+- **Conferência:** na 1ª importação de um cartão, o total "Para importar" deve bater com o **valor da fatura**. Nas seguintes, some também o "Parece já lançado" (as parcelas que já estavam no app). Nos testes com faturas reais do Nubank e do Itaú, bateu no centavo.
+
+### Arquivos aceitos e onde exportar
+
+| Banco | Arquivo | Onde |
+|---|---|---|
+| Nubank | **Fatura do cartão** (.csv) | App → Cartão de crédito → Faturas → escolha a fatura → **Exportar fatura** (chega por e-mail) |
+| Itaú | **Fatura do cartão** (.xlsx) | Site do Itaú → Cartões → Fatura (aberta ou fechada) → **Salvar em Excel** |
+| Itaú | **Extrato da conta** (.xls) | Site do Itaú → Conta → Extrato → escolha o período → **Salvar em Excel** |
+| Outros | Extrato em **OFX** | Site/app do banco → exportar OFX |
+
+> Nas faturas, o app descobre o **cartão** (pelos 4 últimos números, no Itaú, ou pelo nome "Nubank" no apelido) e o **mês da fatura** (pelo vencimento). Confira os dois no topo da prévia.
+
+### Passo 1 — Banco (antes do merge)
+Supabase → **SQL Editor → New query** → cole `sql/008_v13_importar_extrato.sql` → **Run** → a conferência no final deve vir **OK**.
+
+### Passo 2 — Merge do PR → "✨ Nova versão disponível" no app.
+
+### Passo 3 — Testar (com os arquivos que você já tem)
+Pode testar com os dados reais: o que for importado nos testes sai na limpeza geral (passo 4).
+- [ ] Rodou o `008` no Supabase (conferência **OK**).
+- [ ] Cadastre (ou confira) os cartões em **Mais → Cartões**: **Nubank** e **Itaú** (com os 4 últimos números do cartão da fatura), com dia de fechamento e vencimento.
+- [ ] **Importar** uma fatura Nubank já paga (`Nubank_AAAA-MM-DD.csv`):
+  - cartão Nubank e mês 09/2026 já escolhidos;
+  - o total "Para importar" é o **valor que foi pago** daquela fatura;
+  - estornos e "Pagamento recebido" estão em Ignorados.
+- [ ] Troque a categoria de uma loja que aparece mais de uma vez → as outras linhas da mesma loja mudam juntas → **Importar**.
+- [ ] Importe a **mesma** fatura de novo → tudo em "✔️ Já importados".
+- [ ] Importe a fatura Nubank do **mês seguinte**:
+  - as compras parceladas que continuam ("Parcela 10/12", "4/4"…) aparecem em "🟰 Parece já lançado";
+  - a loja cuja categoria você trocou já vem com a categoria nova. Atenção: no Mercado Livre e na Shopee, cada vendedor tem um nome, então cada um é aprendido separado;
+  - "Para importar" + "Parece já lançado" = total da fatura.
+- [ ] Importe a **fatura Itaú** (.xlsx): cartão (pelo final) e mês certos; o total bate com a fatura.
+- [ ] Importe o **extrato da conta Itaú** (.xls): "FATURA PAGA", "PAG BOLETO NU PAGAMENTOS", "RESGATE CDB" e "REND PAGO" estão em Ignorados.
+- [ ] Veja em **Lançamentos** e no **Painel**: os meses batem com as faturas.
+
+### Passo 4 — Começar de verdade (limpeza geral + importação real)
+Quando os testes da v1.3 estiverem ok:
+1. **Backup** (opcional): Mais → Exportar dados → Backup completo.
+2. **Limpeza**: `docs/OPERACAO.md` seção 0 (script `sql/manutencao/limpar_lancamentos_teste.sql`).
+   - Apague lançamentos, alertas, tarefas e caixa da Carteira.
+   - Recomendo marcar também `v_apagar_regras := true`, porque as categorias aprendidas no teste podem ter ficado erradas. Se gostou delas, deixe `false`.
+   - Cartões e recorrências: só apague se forem de teste.
+3. **Cadastros reais** (Mais): cartões (Nubank e Itaú, com os 4 últimos números), recorrências (salário, aluguel, assinaturas) e orçamentos.
+4. **Importação real** de setembro, nesta ordem:
+   1. a fatura de cada cartão que **vence em setembro** (e a de outubro, se já fechou);
+   2. o extrato da conta de setembro.
+5. Daqui em diante, a **rotina mensal**:
+   - importe cada fatura quando ela **fechar**;
+   - importe o extrato da conta uma vez por mês;
+   - o dia a dia continua pelo app e pela Carteira. O que já foi lançado aparece como "🟰 Parece já lançado" e não duplica.
+
+> Recorrências e importação convivem: se o salário é uma recorrência, o "SISPAG" do extrato aparece como "🟰 Parece já lançado". Deixe desmarcado.

@@ -5,7 +5,8 @@
 --   Zera os dados de TESTE para começar o uso real:
 --     SEMPRE apaga: gastos, parcelas, ganhos, alertas (insights), tarefas e a
 --                   caixa de entrada da Carteira do iPhone (v1.2, se existir).
---     OPCIONAL (você escolhe na PARTE 2): cartões, recorrências e orçamentos.
+--     OPCIONAL (você escolhe na PARTE 2): cartões, recorrências, orçamentos e
+--     as categorias aprendidas na importação de extrato (v1.3).
 --
 -- O QUE NUNCA APAGA
 --   Família, usuários (logins), categorias e as chaves do Atalho do iPhone. Categorias criadas no teste
@@ -58,6 +59,7 @@ declare
   v_apagar_cartoes      boolean := false;  -- cartões de teste?
   v_apagar_recorrencias boolean := false;  -- gastos/ganhos fixos de teste?
   v_apagar_orcamentos   boolean := false;  -- orçamentos de teste?
+  v_apagar_regras       boolean := false;  -- categorias aprendidas na importação (v1.3)?
 
   v_confirmo boolean := false;   -- <<< troque para true para apagar de verdade
 
@@ -101,6 +103,11 @@ begin
   if v_apagar_orcamentos then
     delete from public.orcamentos;
     v_tabelas := array_append(v_tabelas, 'orcamentos');
+  end if;
+
+  if v_apagar_regras and to_regclass('public.regras_categoria') is not null then
+    execute 'delete from public.regras_categoria';
+    v_tabelas := array_append(v_tabelas, 'regras_categoria');
   end if;
 
   -- O histórico de auditoria do teste também sai (inclusive os registros de

@@ -470,6 +470,66 @@ export function revogarAtalho(id) {
 }
 
 // =============================================================================
+// Importar extrato e fatura (v1.3 — RF-17)
+// =============================================================================
+
+/** Regras de categoria aprendidas pela família. */
+export function listarRegrasCategoria() {
+  return executar(cliente.from('regras_categoria').select('tipo, padrao, categoria_id'), 'Regras de categoria');
+}
+
+/** Grava (ou atualiza) regras aprendidas: { tipo, padrao, categoria_id }. */
+export function salvarRegrasCategoria(regras, householdId) {
+  if (!regras.length) return Promise.resolve([]);
+  return executar(cliente.from('regras_categoria')
+    .upsert(regras.map((r) => ({ ...r, household_id: householdId })), { onConflict: 'household_id,tipo,padrao' }), 'Salvar regras de categoria');
+}
+
+/**
+ * O que já existe no app no período do arquivo, para achar duplicados:
+ * gastos/ganhos da pessoa e parcelas do cartão (fatura ±1 mês), mais quais
+ * ids da importação já estão gravados.
+ * @param {object} p { userId, inicio, fim ('AAAA-MM-DD'), cartaoId?, competencia?, ids: string[] }
+ */
+export async function dadosDeduplicacao({ userId, inicio, fim, cartaoId = null, competencia = null, ids = [] }) {
+  const lote = (lista, n) => Array.from({ length: Math.ceil(lista.length / n) }, (_, i) => lista.slice(i * n, i * n + n));
+  const [despesas, receitas, parcelas, ...existentes] = await Promise.all([
+    executar(cliente.from('despesas')
+      .select('id, data_compra, valor_total_centavos, forma_pagamento, cartao_id, descricao, local_nome, origem')
+      .eq('user_id', userId).is('excluido_em', null).gte('data_compra', inicio).lte('data_compra', fim), 'Importação: gastos do período'),
+    executar(cliente.from('receitas').select('id, data, valor_centavos, descricao')
+      .eq('user_id', userId).is('excluido_em', null).gte('data', inicio).lte('data', fim), 'Importação: ganhos do período'),
+    cartaoId
+      ? executar(cliente.from('parcelas').select('despesa_id, competencia, valor_centavos, cartao_id')
+        .eq('cartao_id', cartaoId).gte('competencia', somarMesesISO(competencia, -1)).lte('competencia', somarMesesISO(competencia, 1)), 'Importação: parcelas do cartão')
+      : Promise.resolve([]),
+    ...lote(ids, 150).flatMap((parte) => [
+      executar(cliente.from('despesas').select('id').in('id', parte), 'Importação: ids de gastos'),
+      executar(cliente.from('receitas').select('id').in('id', parte), 'Importação: ids de ganhos'),
+    ]),
+  ]);
+  // Gastos das parcelas casadas (para mostrar a descrição e a data da compra).
+  const faltando = [...new Set(parcelas.map((p) => p.despesa_id))].filter((id) => !despesas.some((d) => d.id === id));
+  const extras = faltando.length
+    ? (await Promise.all(lote(faltando, 150).map((parte) => executar(cliente.from('despesas')
+      .select('id, data_compra, valor_total_centavos, forma_pagamento, cartao_id, descricao, local_nome, origem').in('id', parte), 'Importação: compras das parcelas')))).flat()
+    : [];
+  return {
+    despesas: [...despesas, ...extras],
+    receitas,
+    parcelas,
+    idsExistentes: new Set(existentes.flat().map((r) => r.id)),
+  };
+}
+
+/** 'AAAA-MM-01' + n meses (auxiliar local). */
+function somarMesesISO(competencia, n) {
+  const [a, m] = competencia.split('-').map(Number);
+  const d = new Date(Date.UTC(a, m - 1 + n, 1));
+  return d.toISOString().slice(0, 10);
+}
+
+// =============================================================================
 // Exportação (Fase 5 — RF-80, RF-81)
 // =============================================================================
 
@@ -493,15 +553,22 @@ export async function dadosExportacao(competencia, { inicio6, fim12, proxima }) 
 /** Backup completo: todas as tabelas da família, paginando de 1.000 em 1.000. */
 export async function backupCompleto() {
   const tabelas = ['households', 'profiles', 'categorias', 'cartoes', 'recorrencias', 'despesas', 'parcelas',
-    'receitas', 'orcamentos', 'tarefas', 'insights', 'caixa_entrada'];
+    'receitas', 'orcamentos', 'tarefas', 'insights', 'caixa_entrada', 'regras_categoria'];
   const ordem = { caixa_entrada: 'recebido_em' }; // tabelas sem created_at
+  // Tabelas das versões 1.x: se o SQL delas ainda não foi rodado, o backup segue sem elas.
+  const opcionais = new Set(['caixa_entrada', 'regras_categoria']);
   const resultado = {};
   for (const tabela of tabelas) {
     const linhas = [];
-    for (let de = 0; ; de += 1000) {
-      const pagina = await executar(cliente.from(tabela).select('*').order(ordem[tabela] ?? 'created_at').range(de, de + 999), `Backup: ${tabela}`);
-      linhas.push(...pagina);
-      if (pagina.length < 1000) break;
+    try {
+      for (let de = 0; ; de += 1000) {
+        const pagina = await executar(cliente.from(tabela).select('*').order(ordem[tabela] ?? 'created_at').range(de, de + 999), `Backup: ${tabela}`);
+        linhas.push(...pagina);
+        if (pagina.length < 1000) break;
+      }
+    } catch (e) {
+      if (!opcionais.has(tabela) || e.tipo !== 'recusado') throw e;
+      log.aviso('db', `Backup sem a tabela ${tabela} (ainda não criada no banco)`, { motivo: e.message });
     }
     resultado[tabela] = linhas;
   }

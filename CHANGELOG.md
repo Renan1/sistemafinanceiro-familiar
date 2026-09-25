@@ -2,6 +2,55 @@
 
 Todas as mudanças relevantes do projeto. Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/), versões em [SemVer](https://semver.org/lang/pt-BR/).
 
+## [1.3.0] — 2026-09-25 — Importar extrato e fatura (Nubank, Itaú, OFX)
+
+### Adicionado
+- **Mais → Importar extrato ou fatura**. O arquivo é lido no aparelho e não é enviado a lugar nenhum. Formatos:
+  - fatura **Nubank** (.csv);
+  - fatura **Itaú** (.xlsx);
+  - extrato da conta **Itaú** (.xls);
+  - **OFX** de qualquer banco.
+- **Prévia com 4 abas** (Para importar, Parece já lançado, Ignorados, Já importados):
+  - categoria sugerida, e trocar uma troca todas as linhas do mesmo lugar;
+  - forma de pagamento (PIX, boleto, débito);
+  - na fatura, o cartão e o mês vêm sugeridos pelo final e pelo vencimento.
+- **Não duplica:**
+  - id fixo por linha, então reimportar mostra "já importado";
+  - parcela seguinte da mesma compra, compra digitada ou pela Carteira, conta paga e salário de recorrência aparecem como "parece já lançado".
+- **Ignora:**
+  - pagamento de fatura (no cartão e na conta, inclusive o boleto do Nubank);
+  - aplicação e resgate;
+  - rendimento automático;
+  - compra e estorno no mesmo mês;
+  - "Controle de saldo".
+- **"Parcela k/N"** vira uma compra com as parcelas k a N, nas faturas certas. O Painel já mostra o comprometimento futuro.
+- **Aprende:** categoria trocada vira regra da família (`regras_categoria`), usada na próxima importação.
+- `sql/008_v13_importar_extrato.sql`:
+  - tabela `regras_categoria` com RLS e validação da categoria;
+  - origem `importacao_conta` nos gastos e ganhos.
+- **Módulos:**
+  - `js/importacao.js`: leitores, classificação, duplicados e montagem;
+  - `js/planilha-worker.js`: SheetJS isolada num Web Worker, com tempo limite;
+  - `js/ui/importar.js`.
+- **Limpeza de teste:** opção de apagar as categorias aprendidas. O backup inclui as regras.
+- **Testes:**
+  - 26 JS, com arquivos fictícios no formato real de cada banco;
+  - 8 do banco;
+  - 8 no navegador (CSV, .xlsx e .xls de verdade, reimportação, duplicados, regra aprendida), mais a regressão da v1.2, v1.1 e Fases 2 a 5;
+  - conferido com os arquivos reais: os totais batem com as faturas.
+
+### Alterado
+- O backup completo segue mesmo se as tabelas das versões 1.x ainda não existirem no banco.
+
+## [1.2.1] — 2026-09-25 — Passo a passo do Atalho com os nomes reais do iOS
+
+### Corrigido
+- Guia (`docs/melhorias-v1.md`) e tela **Mais → Atalho do iPhone**:
+  - a variável é **Entrada do Atalho → Valor**, e não "Quantia";
+  - o cartão vem de **Cartão ou Tiquete**, e não "Cartão ou Passe";
+  - explica que "Entrada do Atalho" fica na faixa acima do teclado, e não em "Selecionar Variável";
+  - validado no iPhone do Renan.
+
 ## [1.2.0] — 2026-09-25 — Compras da Carteira do iPhone direto no app
 
 ### Adicionado

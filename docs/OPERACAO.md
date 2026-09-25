@@ -6,7 +6,7 @@ O sistema está completo. Este guia diz **o que fazer de rotina**, **o que vigia
 
 ## 0. Começar o uso real (uma vez)
 
-Os dados de teste (gastos, ganhos, alertas, tarefas e, se quiser, cartões, recorrências e orçamentos) saem com um script. Não precisa apagar nada na mão.
+Os dados de teste (gastos, ganhos, alertas, tarefas, caixa da Carteira e, se quiser, cartões, recorrências, orçamentos e categorias aprendidas na importação) saem com um script. Não precisa apagar nada na mão.
 
 1. Nos **dois celulares**, abra o app com internet e confira **"✓ Tudo sincronizado"** no topo.
 2. (Opcional) **Mais → Exportar dados → Backup completo**, para guardar o teste.
@@ -25,6 +25,7 @@ Os dados de teste (gastos, ganhos, alertas, tarefas e, se quiser, cartões, reco
 - Lançar gastos na hora (**Gasto** é a tela inicial). Sem sinal, tudo bem: o gasto fica no celular e sobe sozinho depois.
 
 ### Todo início de mês (5–10 minutos, a dois)
+0. **Importar** as faturas que fecharam e o extrato da conta do mês: **Mais → Importar extrato ou fatura** (o que já foi lançado aparece como "parece já lançado" e não duplica).
 1. **Painel** → mês que acabou → **Família**: leiam juntos ganhos, gastos, saldo e previsto × realizado.
 2. **Mais → Exportar dados → Gerar JSON do mês** → **Compartilhar** para o Claude.
 3. No Claude: *"Analise com o Consultor Financeiro Familiar"*.
