@@ -71,8 +71,9 @@ begin
   select id, h, 'Intruso' from auth.users where email = 'intruso@teste.com';
 end $$;
 
-select teste.ok((select count(*) from public.categorias) = 44,
-                'Seeds: 22 categorias criadas para cada família (2 famílias)');
+-- 22 categorias padrão (001) + Financiamentos (009, v1.3.1) = 23 por família.
+select teste.ok((select count(*) from public.categorias) = 46,
+                'Seeds: 23 categorias criadas para cada família (2 famílias)');
 
 -- ===========================================================================
 -- RENAN
@@ -276,7 +277,7 @@ select teste.ok((select count(*) from despesas) = 0
             and (select count(*) from auditoria where household_id <> meu_household()) = 0
             and (select count(*) from profiles) = 1
             and (select count(*) from households) = 1
-            and (select count(*) from categorias) = 22
+            and (select count(*) from categorias) = 23   -- só as da própria família (22 + Financiamentos)
             and (select count(*) from vw_resumo_mensal) = 0,
                 'Intruso de outra família não enxerga nenhum dado dos Martins');
 

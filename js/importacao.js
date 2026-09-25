@@ -38,7 +38,7 @@
  * mostra o que está comprometido nos próximos meses (D-48).
  * =============================================================================
  */
-import { lerValorBR, competenciaDe, somarMesesCompetencia } from './formato.js';
+import { lerValorBR, competenciaDe, somarMesesCompetencia, moeda } from './formato.js';
 import { diaAjustado, MAX_PARCELAS } from './parcelas.js';
 import { normalizar } from './carteira.js';
 import { idDeterministico } from './recorrencias.js';
@@ -285,6 +285,7 @@ const IGNORAR = [
  */
 const DICIONARIO = [
   // ---- gastos
+  ['despesa', /financiamento|financeira|\bcfi\b|consorcio|emprestimo|credito pessoal|parcela contrato/, 'Financiamentos'],
   ['despesa', /\biof\b|anuidade|mensalidade plano|tar pacote|tarifa|\bjuros\b|\bipva\b|\biptu\b|detran|darf|receita federal/, 'Impostos/Taxas'],
   ['despesa', /netflix|spotify|youtube ?premium|google (one|g1|storage)|apple com bill|icloud|microsoft|amazon ?prime|prime video|disney|\bhbo\b|\bmax\b|globoplay|deezer|paddle|tunemymusic|openai|chatgpt|socio ?torcedor/, 'Assinaturas'],
   ['despesa', /ifood|rappi|ze delivery|burger|mc ?donald|\bbk\b|hamburg|pizza|restaurante|lanchonete|lanches|churrasc|sushi|\bjapa\b|outback|subway|habib|\bcafe\b|cafeteria|doceria|sorvet/, 'Restaurante/Delivery'],
@@ -459,11 +460,20 @@ export async function analisar({ arquivo, userId, cartao = null, competencia = n
     }
 
     // ---- Parece já lançado (digitado, Carteira, recorrência ou outra importação)
-    const parecido = (existente, descricaoExistente) => {
+    const parecido = (existente, descricaoExistente, valorExistente = item.valor) => {
       usadas.add(existente);
+      const diferente = valorExistente !== item.valor
+        ? ` — ${moeda(valorExistente)} no app × ${moeda(item.valor)} no arquivo. Se for o mesmo, deixe desmarcado e corrija o valor em Lançamentos`
+        : ' — marque se for outro';
       return Object.assign(item, { situacao: 'provavel_duplicado', selecionado: false, duplicadoDe: descricaoExistente,
-        motivo: `Parece já lançado: ${descricaoExistente ?? 'lançamento'} — marque se for outro` });
+        motivo: `Parece já lançado: ${descricaoExistente ?? 'lançamento'}${diferente}` });
     };
+    // Lançamento gerado por RECORRÊNCIA (pensão, aluguel…) pode ter valor um
+    // pouco diferente do que caiu de verdade: aceita até 10% e ±5 dias (v1.3.1).
+    const valorBate = (existente, valorExistente, dias, { dataExata = 3 } = {}) =>
+      (valorExistente === item.valor && dias <= dataExata)
+      || (existente.origem === 'recorrencia' && dias <= 5 && Math.abs(valorExistente - item.valor) <= Math.round(0.1 * Math.max(valorExistente, item.valor)));
+    const melhor = (candidatos, valorDe) => candidatos.find((c) => valorDe(c) === item.valor) ?? candidatos[0];
     const descDespesa = (id) => {
       const d = despesasExist.find((x) => x.id === id);
       return d ? (d.descricao || d.local_nome || 'gasto') : 'gasto';
@@ -478,17 +488,20 @@ export async function analisar({ arquivo, userId, cartao = null, competencia = n
         if (usadas.has(p) || p.cartao_id !== cartao.id) return false;
         if (k > 1) return p.competencia === competencia && Math.abs(p.valor_centavos - item.valor) <= 1;
         const d = despesasExist.find((x) => x.id === p.despesa_id);
-        return Boolean(d?.data_compra) && diasEntre(d.data_compra, linha.data) <= 5
-          && Math.abs(mesesEntre(p.competencia, competencia)) <= 1 && Math.abs(p.valor_centavos - item.valor) <= tolerancia;
+        if (!d?.data_compra || Math.abs(mesesEntre(p.competencia, competencia)) > 1) return false;
+        const dias = diasEntre(d.data_compra, linha.data);
+        return (dias <= 5 && Math.abs(p.valor_centavos - item.valor) <= tolerancia)
+          || (d.origem === 'recorrencia' && valorBate(d, p.valor_centavos, dias));
       });
-      if (achado) return parecido(achado, descDespesa(achado.despesa_id));
+      if (achado) return parecido(achado, descDespesa(achado.despesa_id), achado.valor_centavos);
     } else if (tipo === 'despesa') {
-      const achado = despesasExist.find((d) => !usadas.has(d) && d.forma_pagamento !== 'credito'
-        && d.valor_total_centavos === item.valor && diasEntre(d.data_compra, linha.data) <= 3);
-      if (achado) return parecido(achado, achado.descricao || achado.local_nome);
+      const achado = melhor(despesasExist.filter((d) => !usadas.has(d) && d.forma_pagamento !== 'credito'
+        && valorBate(d, d.valor_total_centavos, diasEntre(d.data_compra, linha.data))), (d) => d.valor_total_centavos);
+      if (achado) return parecido(achado, achado.descricao || achado.local_nome, achado.valor_total_centavos);
     } else {
-      const achado = receitasExist.find((r) => !usadas.has(r) && r.valor_centavos === item.valor && diasEntre(r.data, linha.data) <= 3);
-      if (achado) return parecido(achado, achado.descricao || 'ganho');
+      const achado = melhor(receitasExist.filter((r) => !usadas.has(r)
+        && valorBate(r, r.valor_centavos, diasEntre(r.data, linha.data))), (r) => r.valor_centavos);
+      if (achado) return parecido(achado, achado.descricao || 'ganho', achado.valor_centavos);
     }
     return item;
   });
@@ -498,6 +511,16 @@ export async function analisar({ arquivo, userId, cartao = null, competencia = n
 // 5. Item confirmado → item da fila; categorias trocadas → regras aprendidas
 // =============================================================================
 
+/** Categorias que são compromisso todo mês → lançamento "Fixo" (Painel: fixos × variáveis). */
+const CATEGORIAS_FIXAS = {
+  despesa: ['Financiamentos', 'Moradia', 'Contas', 'Assinaturas'],
+  receita: ['Salário', 'Pró-labore', 'Aluguel'],
+};
+export function naturezaPorCategoria(categoria) {
+  if (!categoria) return 'variavel';
+  return (CATEGORIAS_FIXAS[categoria.tipo] ?? []).some((n) => norm(n) === norm(categoria.nome)) ? 'fixa' : 'variavel';
+}
+
 /**
  * Monta o lançamento no formato da fila (o mesmo do gasto/ganho digitado).
  * @param {object} item     de analisar() (com categoriaId escolhida)
@@ -505,8 +528,10 @@ export async function analisar({ arquivo, userId, cartao = null, competencia = n
  * @param {object} p.arquivo  resultado de lerArquivo()
  * @param {object} p.perfil   { id, household_id }
  * @param {object} [p.cartao]
+ * @param {Array}  [p.categorias]  para a natureza (Fixo/Variável) pela categoria
  */
-export function montarLancamento(item, { arquivo, perfil, cartao = null }) {
+export function montarLancamento(item, { arquivo, perfil, cartao = null, categorias = [] }) {
+  const natureza = naturezaPorCategoria(categorias.find((c) => c.id === item.categoriaId));
   const origem = arquivo.tipo === 'cartao' ? 'importacao_fatura' : 'importacao_conta';
   const nota = [`Importado: ${arquivo.titulo}`, item.parcela ? `parcela ${item.parcela.k} de ${item.parcela.n}` : null]
     .filter(Boolean).join(' · ');
@@ -515,7 +540,7 @@ export function montarLancamento(item, { arquivo, perfil, cartao = null }) {
       tipo: 'receita', id: item.id, user_id: perfil.id,
       dados: {
         id: item.id, household_id: perfil.household_id, user_id: perfil.id, data: item.data, valor_centavos: item.valor,
-        categoria_id: item.categoriaId, descricao: item.descricao, natureza: 'variavel', origem,
+        categoria_id: item.categoriaId, descricao: item.descricao, natureza, origem,
         recorrencia_id: null, competencia_recorrencia: null, observacao: nota,
       },
     };
@@ -529,7 +554,7 @@ export function montarLancamento(item, { arquivo, perfil, cartao = null }) {
     dados: {
       id: item.id, data_compra: item.data, valor_total_centavos: total, descricao, categoria_id: item.categoriaId,
       forma_pagamento: item.forma, cartao_id: item.forma === 'credito' ? cartao.id : null, qtd_parcelas: parcelas.length,
-      natureza: 'variavel', latitude: null, longitude: null, precisao_metros: null, local_nome: item.localNome || null,
+      natureza, latitude: null, longitude: null, precisao_metros: null, local_nome: item.localNome || null,
       origem, recorrencia_id: null, competencia_recorrencia: null, observacao: nota, valor_a_vista_centavos: null,
     },
   };

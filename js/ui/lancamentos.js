@@ -6,7 +6,9 @@
  * inteira, com:
  *   * filtros: pessoa, tipo (gastos/ganhos), categoria, forma de pagamento,
  *     fixo/variável — e busca por texto (descrição, categoria, local);
- *   * totais do que está filtrado;
+ *   * totais do que está filtrado; "Gastos no mês" vem do mesmo cálculo do
+ *     Painel (pelo mês da fatura: parcelada pesa só a parcela) — v1.3.1;
+ *   * compra parcelada mostra "R$ X/mês · Nx · total R$ Y" (v1.3.1);
  *   * toque num lançamento SEU → editar/excluir (os dos outros só aparecem).
  *
  * Junta duas fontes:
@@ -37,6 +39,7 @@ export function montarLancamentos(raiz, { editar }) {
   let doServidor = { despesas: [], receitas: [] };
   let fila = [];
   let doCache = false;
+  let resumoMes = null; // vw_resumo_mensal do mês (igual ao Painel)
   let carregando = true;
 
   const titulo = h('h2', { class: 'titulo-mes' });
@@ -45,6 +48,7 @@ export function montarLancamentos(raiz, { editar }) {
   const areaPendentes = h('div');
   const areaLista = h('div', { class: 'lista' });
   const aviso = h('p', { class: 'dica' });
+  const notaTotais = h('p', { class: 'dica' });
 
   const navMes = h('div', { class: 'nav-mes' },
     h('button', { type: 'button', class: 'btn-icone', 'aria-label': 'Mês anterior', onclick: () => mudarMes(-1) }, '‹'),
@@ -98,6 +102,10 @@ export function montarLancamentos(raiz, { editar }) {
   async function carregar() {
     titulo.textContent = mesExtenso(filtros.competencia);
     const competencia = filtros.competencia;
+    resumoMes = null;
+    db.resumoDoMes(competencia)
+      .then((linhas) => { if (competencia === filtros.competencia) { resumoMes = linhas; desenhar(); } })
+      .catch(() => { /* sem resumo (offline): os totais usam a lista */ });
     const chaveCache = `lancamentos:${competencia}`;
     carregando = true;
     fila = await listarFila(estado.perfil?.id);
@@ -164,10 +172,23 @@ export function montarLancamentos(raiz, { editar }) {
 
     const soma = (tipo) => itens.filter((i) => i.tipo === tipo)
       .reduce((s, i) => s + (i.registro.valor_total_centavos ?? i.registro.valor_centavos ?? 0), 0);
-    trocar(areaTotais,
-      h('span', {}, 'Gastos', h('strong', {}, moeda(soma('despesa')))),
+    // Sem filtro (além da pessoa): "Gastos no mês" = o mesmo número do Painel,
+    // pelo mês da fatura — compra parcelada pesa só a parcela do mês.
+    const semFiltro = filtros.tipo === 'todos' && !filtros.categoria && !filtros.forma && !filtros.natureza && !filtros.busca.trim();
+    const doMes = semFiltro && resumoMes?.find((l) => (filtros.pessoa === 'todos' ? l.user_id == null : l.user_id === filtros.pessoa));
+    const compras = soma('despesa');
+    trocar(areaTotais, doMes ? [
+      h('span', {}, 'Gastos no mês', h('strong', {}, moeda(doMes.despesas_centavos)), h('small', {}, 'pelas faturas')),
+      h('span', {}, 'Ganhos', h('strong', { class: 'positivo' }, moeda(doMes.receitas_centavos))),
+      h('span', {}, 'Lançamentos', h('strong', {}, String(itens.length))),
+    ] : [
+      h('span', {}, 'Compras', h('strong', {}, moeda(compras)), h('small', {}, 'valor total')),
       h('span', {}, 'Ganhos', h('strong', { class: 'positivo' }, moeda(soma('receita')))),
-      h('span', {}, 'Lançamentos', h('strong', {}, String(itens.length))));
+      h('span', {}, 'Lançamentos', h('strong', {}, String(itens.length))),
+    ]);
+    notaTotais.textContent = doMes && compras !== doMes.despesas_centavos
+      ? `Compras lançadas neste mês: ${moeda(compras)} (valor total). As parceladas pesam uma parcela por mês — é o que entra em "Gastos no mês".`
+      : '';
 
     // Recusados pelo servidor ficam em destaque, com ações.
     const recusados = fila.filter((f) => f.estado === 'erro');
@@ -194,7 +215,7 @@ export function montarLancamentos(raiz, { editar }) {
       if (r.forma_pagamento === 'credito') {
         const cartao = cartaoPorId(r.cartao_id);
         if (cartao) detalhes.push(cartao.apelido);
-        if (r.qtd_parcelas > 1) detalhes.push(`${r.qtd_parcelas}x`);
+        if (r.qtd_parcelas > 1) detalhes.push(`${r.qtd_parcelas}x · total ${moeda(valor)}`);
         // v1.1: compra com juros informada → "juros R$ 278,80"
         if (r.valor_a_vista_centavos && r.valor_total_centavos > r.valor_a_vista_centavos) {
           detalhes.push(`juros ${moeda(r.valor_total_centavos - r.valor_a_vista_centavos)}`);
@@ -215,7 +236,11 @@ export function montarLancamentos(raiz, { editar }) {
     h('div', { class: 'item-texto' },
       h('strong', {}, r.descricao || cat?.nome || '—'),
       h('small', {}, detalhes.join(' · '))),
-    h('span', { class: `item-valor ${i.tipo === 'receita' ? 'positivo' : ''}` }, `${i.tipo === 'receita' ? '+' : '−'} ${moeda(valor)}`),
+    // Parcelada: o valor que pesa por mês (a parcela); o total vai nos detalhes.
+    h('span', { class: `item-valor ${i.tipo === 'receita' ? 'positivo' : ''}` },
+      i.tipo === 'despesa' && r.qtd_parcelas > 1
+        ? `− ${moeda(Math.floor(valor / r.qtd_parcelas))}/mês`
+        : `${i.tipo === 'receita' ? '+' : '−'} ${moeda(valor)}`),
     meu ? h('span', { class: 'item-seta' }, '›') : null);
   }
 
@@ -239,7 +264,7 @@ export function montarLancamentos(raiz, { editar }) {
   }
 
   trocar(raiz, h('section', { class: 'tela' },
-    navMes, areaFiltros, areaTotais, aviso, areaPendentes, areaLista,
+    navMes, areaFiltros, areaTotais, notaTotais, aviso, areaPendentes, areaLista,
     h('p', { class: 'dica' }, 'Toque num lançamento seu para editar ou excluir. Gastos aparecem no mês da compra; o Painel soma pelo mês da fatura.')));
 
   desenharFiltros();

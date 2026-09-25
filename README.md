@@ -22,7 +22,8 @@ PWA (app que roda no navegador e é instalado na Tela de Início do celular) + S
 | — | **Sistema completo em uso** (validado no celular) + manual de operação | ✅ **v1.0.0** |
 | 1.1 | Compra parcelada com juros (valor da parcela + preço à vista) | ✅ v1.1.0 |
 | 1.2 | Compras da Carteira do iPhone direto no app (Atalhos + caixa de entrada) | ✅ v1.2.1 |
-| 1.3 | Importar extrato e fatura (Nubank, Itaú, OFX) com categoria sugerida e sem duplicar | 🔄 v1.3.0 |
+| 1.3 | Importar extrato e fatura (Nubank, Itaú, OFX) com categoria sugerida e sem duplicar | ✅ v1.3.0 |
+| 1.3.1 | Parcelas "/mês" na lista, recorrências com valor variável, categoria Financiamentos | 🔄 v1.3.1 |
 
 ## Documentação
 
@@ -100,6 +101,7 @@ sql/                  scripts do banco — rodar no Supabase, em ordem
   006_v11_parcela_com_juros.sql  preço à vista (juros) nas compras parceladas
   007_v12_carteira_iphone.sql    caixa de entrada + chave do Atalho do iPhone
   008_v13_importar_extrato.sql   categorias aprendidas na importação de extrato
+  009_v131_financiamentos.sql    categoria Financiamentos
   manutencao/           scripts avulsos (ex.: zerar lançamentos de teste)
 claude-skill/          Skill "Consultor Financeiro Familiar" (SKILL.md, formato, exemplos, MCP)
 scripts/              utilitários (gera o exemplo da Skill com o código do app)

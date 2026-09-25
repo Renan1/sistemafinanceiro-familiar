@@ -196,7 +196,7 @@ export function montarImportar(raiz, { navegar }) {
     botao.textContent = 'Importando…';
     try {
       for (const item of escolhidos) {
-        await enfileirar(montarLancamento(item, { arquivo, perfil: estado.perfil, cartao }));
+        await enfileirar(montarLancamento(item, { arquivo, perfil: estado.perfil, cartao, categorias: estado.categorias }));
       }
       log.info('importar', 'Lançamentos importados', { formato: arquivo.formato, qtd: escolhidos.length });
       const novasRegras = regrasAprendidas(itens);

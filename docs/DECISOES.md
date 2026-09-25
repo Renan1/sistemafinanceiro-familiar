@@ -155,6 +155,14 @@ Cada decisão importante fica registrada aqui com **o que** foi decidido e **por
 **Decisão:** o JSON para o Claude leva nomes, valores, categorias e nome do local; **não** leva e-mails, ids internos nem coordenadas GPS. O backup completo (para guardar) leva tudo.
 **Por quê:** a análise não precisa desses dados, e o que vai para uma conversa deve ser o mínimo necessário.
 
+### D-51 — Recorrência com valor variável é reconhecida na importação
+**Decisão:** na importação, se o lançamento já existente veio de uma **recorrência**, ele casa com a linha do arquivo com até 10% de diferença de valor e ±5 dias; o motivo mostra os dois valores. Lançamento digitado continua exigindo o mesmo valor.
+**Por quê:** pensão, aluguel recebido e salário variam de um mês para o outro; a recorrência cria o valor "esperado" e o extrato traz o real. Sem tolerância, o mesmo dinheiro entraria duas vezes. Quem decide é a pessoa (a linha vem desmarcada).
+
+### D-52 — "Financiamentos" como categoria própria e natureza pela categoria
+**Decisão:** categoria padrão "Financiamentos" (sql/009). Na importação, a natureza vem da categoria: Financiamentos, Moradia, Contas, Assinaturas, Salário, Pró-labore e Aluguel são **fixos**.
+**Por quê:** parcela de financiamento é compromisso mensal, não consumo de transporte; separada, aparece com clareza no Painel e na análise do Claude. Fixos corretos deixam o "fixos × variáveis" e a regra "fixos > 50% da renda" confiáveis sem ajuste manual.
+
 ### D-46 — Importação lida no aparelho, com prévia e confirmação
 **Decisão:** o arquivo do banco é lido no navegador (`js/importacao.js`); nada é enviado até a pessoa conferir a prévia e tocar em Importar. Os lançamentos vão pela **mesma fila** dos digitados (offline, idempotente).
 **Por quê:** extrato é dado sensível — não precisa sair do aparelho; a prévia evita lançamento errado no Painel; reaproveitar a fila garante as mesmas regras de validação e sincronização.

@@ -11,12 +11,12 @@ import assert from 'node:assert/strict';
 import {
   consertarTexto, limparDescricao, chaveComerciante, lerParcela, lerData, lerValorComSinal, lerCSV,
   lerNubankCSV, lerItauFatura, lerItauConta, lerOFX, lerArquivo, analisar, montarLancamento,
-  regrasAprendidas, sugerirCategoria, sugerirCartao, resumo, formaDaConta,
+  regrasAprendidas, sugerirCategoria, sugerirCartao, resumo, formaDaConta, naturezaPorCategoria,
 } from '../../js/importacao.js';
 
 const U = 'user-renan';
 const NOMES_D = ['Alimentação/Mercado', 'Restaurante/Delivery', 'Transporte/Combustível', 'Moradia', 'Contas', 'Saúde',
-  'Lazer', 'Assinaturas', 'Manutenção', 'Impostos/Taxas', 'Outros'];
+  'Lazer', 'Assinaturas', 'Manutenção', 'Financiamentos', 'Impostos/Taxas', 'Outros'];
 const NOMES_R = ['Salário', 'Pró-labore', 'Rendimentos/Investimentos', 'Reembolso', 'Outros'];
 const categorias = [...NOMES_D.map((nome, i) => ({ id: `d${i}`, nome, tipo: 'despesa' })),
   ...NOMES_R.map((nome, i) => ({ id: `r${i}`, nome, tipo: 'receita' }))];
@@ -300,5 +300,48 @@ describe('aprender com as correções', async () => {
       [4, 7960, 'k-nu', 'credito', 'importacao_fatura']);
     assert.equal(l.dados.descricao, 'Clube Teste (9/12)');
     assert.match(l.dados.observacao, /parcela 9 de 12/);
+  });
+});
+
+describe('v1.3.1 — recorrência com valor diferente, financiamentos e natureza', async () => {
+  const EXTRATO = [{ nome: 'Lançamentos', linhas: [
+    ['data', 'lançamento', 'ag./origem', 'valor (R$)', 'saldos (R$)'],
+    ['01/09/2026', 'PIX TRANSF FULANA01/09', '', 1050, ''],
+    ['05/09/2026', 'PIX TRANSF CICLANO05/09', '', 950, ''],
+    ['10/09/2026', 'PAG BOLETO BANCO TESTE CFI S.A.', '', -700.5, ''],
+    ['10/09/2026', 'PAG BOLETO FINANCEIRA TESTE SA', '', -500, ''],
+  ] }];
+  const arquivo = lerItauConta(EXTRATO);
+  const existentes = { despesas: [], receitas: [
+    { id: 'rec-pensao', data: '2026-09-02', valor_centavos: 100000, descricao: 'Pensão', origem: 'recorrencia' },
+    { id: 'manual', data: '2026-09-05', valor_centavos: 100000, descricao: 'Reembolso', origem: 'manual' },
+  ] };
+  const itens = await analisar({ arquivo, userId: U, categorias, existentes });
+  const por = (re) => itens.find((i) => re.test(i.linha.descricao));
+
+  test('recorrência com valor até 10% diferente → "parece já lançado", mostrando os dois valores', () => {
+    assert.equal(por(/FULANA/).situacao, 'provavel_duplicado');
+    assert.match(por(/FULANA/).motivo, /Pensão — R\$\s1\.000,00 no app × R\$\s1\.050,00 no arquivo/);
+  });
+  test('lançamento digitado (não recorrência) com valor diferente continua "novo"', () => {
+    assert.equal(por(/CICLANO/).situacao, 'novo');
+  });
+  test('financiamento (CFI, "financeira") → categoria Financiamentos, lançado como Fixo', () => {
+    assert.equal(por(/TESTE CFI/).categoriaId, cat('Financiamentos'));
+    assert.equal(por(/FINANCEIRA/).categoriaId, cat('Financiamentos'));
+    const l = montarLancamento(por(/TESTE CFI/), { arquivo, perfil, categorias });
+    assert.equal(l.dados.natureza, 'fixa');
+  });
+  test('natureza pela categoria: Salário/Moradia fixos; Lazer/Outros variáveis', () => {
+    const c = (nome, tipo = 'despesa') => categorias.find((x) => x.nome === nome && x.tipo === tipo);
+    assert.equal(naturezaPorCategoria(c('Salário', 'receita')), 'fixa');
+    assert.equal(naturezaPorCategoria(c('Moradia')), 'fixa');
+    assert.equal(naturezaPorCategoria(c('Lazer')), 'variavel');
+    assert.equal(naturezaPorCategoria(undefined), 'variavel');
+  });
+  test('recorrência muito diferente (> 10%) não é confundida', async () => {
+    const r = await analisar({ arquivo, userId: U, categorias, existentes: { receitas: [
+      { id: 'x', data: '2026-09-02', valor_centavos: 80000, descricao: 'Pensão', origem: 'recorrencia' }] } });
+    assert.equal(r.find((i) => /FULANA/.test(i.linha.descricao)).situacao, 'novo');
   });
 });

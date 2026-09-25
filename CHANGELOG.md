@@ -2,6 +2,28 @@
 
 Todas as mudanças relevantes do projeto. Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/), versões em [SemVer](https://semver.org/lang/pt-BR/).
 
+## [1.3.1] — 2026-09-25 — Parcelas na lista, recorrências variáveis e Financiamentos
+
+### Adicionado
+- **Categoria "Financiamentos" (🏦)** para parcela de financiamento de carro ou casa, empréstimo e consórcio, separada de Transporte.
+  - `sql/009_v131_financiamentos.sql` cria a categoria na família e a inclui no padrão de famílias novas.
+  - O dicionário da importação reconhece termos genéricos: "financiamento", "financeira", "CFI", "consórcio", "empréstimo".
+- **Natureza pela categoria na importação:** Financiamentos, Moradia, Contas e Assinaturas (gastos) e Salário, Pró-labore e Aluguel (ganhos) entram como **Fixo**. Assim o Painel separa fixos de variáveis.
+
+### Alterado
+- **Lançamentos:**
+  - compra parcelada mostra **"R$ 500,00/mês"** e, nos detalhes, "12x · total R$ 6.000,00";
+  - sem filtros, o card **"Gastos no mês"** usa o mesmo cálculo do Painel (pelas faturas, a parcelada pesa só a parcela);
+  - uma nota mostra o total das compras lançadas no mês.
+- **Importação:** um lançamento gerado por **recorrência** (pensão, aluguel…) é reconhecido como "parece já lançado" mesmo com **até 10%** de diferença no valor e **±5 dias**. O motivo mostra os dois valores ("R$ 1.000,00 no app × R$ 1.050,00 no arquivo").
+
+### Testes
+- 5 JS novos: recorrência variável, financiamento, natureza.
+- 3 do banco.
+- 4 no navegador (Lançamentos).
+- Regressão completa.
+- O teste de categorias padrão passou a contar 23.
+
 ## [1.3.0] — 2026-09-25 — Importar extrato e fatura (Nubank, Itaú, OFX)
 
 ### Adicionado
