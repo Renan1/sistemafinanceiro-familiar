@@ -40,6 +40,7 @@ export function montarLancamentos(raiz, { editar }) {
   let fila = [];
   let doCache = false;
   let resumoMes = null; // vw_resumo_mensal do mês (igual ao Painel)
+  let resumoDe = null;   // de qual mês é o resumoMes
   let carregando = true;
 
   const titulo = h('h2', { class: 'titulo-mes' });
@@ -102,9 +103,10 @@ export function montarLancamentos(raiz, { editar }) {
   async function carregar() {
     titulo.textContent = mesExtenso(filtros.competencia);
     const competencia = filtros.competencia;
-    resumoMes = null;
+    // Só descarta o resumo ao TROCAR de mês (recarregar o mesmo mês não pisca o card).
+    if (resumoDe !== competencia) { resumoMes = null; resumoDe = competencia; }
     db.resumoDoMes(competencia)
-      .then((linhas) => { if (competencia === filtros.competencia) { resumoMes = linhas; desenhar(); } })
+      .then((linhas) => { if (competencia === filtros.competencia) { resumoMes = linhas; resumoDe = competencia; desenhar(); } })
       .catch(() => { /* sem resumo (offline): os totais usam a lista */ });
     const chaveCache = `lancamentos:${competencia}`;
     carregando = true;
