@@ -2,6 +2,16 @@
 
 Todas as mudanças relevantes do projeto. Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/), versões em [SemVer](https://semver.org/lang/pt-BR/).
 
+## [1.0.1] — 2026-09-25 — Zerar os dados de teste
+
+### Alterado
+- `sql/manutencao/limpar_lancamentos_teste.sql`:
+  - agora também apaga as **tarefas** (antes ficavam as tarefas de teste);
+  - opcionalmente apaga **cartões, recorrências e orçamentos** de teste (escolha true/false);
+  - prévia com a contagem de tudo;
+  - recusa, sem apagar nada, se pedir para apagar cartões ainda usados por uma recorrência.
+- `docs/OPERACAO.md`: seção "Começar o uso real".
+
 ## [1.0.0] — 2026-09-25 — Sistema completo em uso
 
 As 5 fases foram entregues e validadas no celular pelos dois usuários. Isso inclui a rotina mensal completa: exportar → Skill do Claude → importar tarefas.
