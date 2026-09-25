@@ -150,6 +150,7 @@ Precisa do **iOS 17 ou mais novo**.
 
 - **Trocar a categoria** de uma linha troca todas as linhas do **mesmo lugar**. Ao importar, o app **aprende**: na próxima importação, esse lugar já vem com a categoria certa, para os dois.
 - **Parcelas:** "Parcela 9/12" da fatura vira **uma** compra com as parcelas 9 a 12, nos meses certos. Assim o Painel já mostra o que está comprometido. No mês seguinte, a "Parcela 10/12" é reconhecida como já lançada.
+- **Ordem das faturas:** pode importar em qualquer ordem. Se a fatura mais nova entrou primeiro, na mais antiga as compras parceladas entram só com a parcela daquele mês (aviso na prévia) — sem duplicar (v1.3.2).
 - **Conferência:** na 1ª importação de um cartão, o total "Para importar" deve bater com o **valor da fatura**. Nas seguintes, some também o "Parece já lançado" (as parcelas que já estavam no app). Nos testes com faturas reais do Nubank e do Itaú, bateu no centavo.
 
 ### Arquivos aceitos e onde exportar

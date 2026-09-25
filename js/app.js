@@ -42,7 +42,7 @@ import { montarAtalho } from './ui/atalho.js';
 import { montarImportar } from './ui/importar.js';
 import { reavaliarSeNecessario } from './saude.js';
 
-const VERSAO = '1.3.1';
+const VERSAO = '1.3.2';
 let BUILD = 'local';
 /** URL e chave pública do Supabase (js/config.js) — a tela do Atalho mostra para copiar. */
 let CONFIG_PUBLICA = null;

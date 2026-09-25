@@ -187,7 +187,7 @@ export function montarLancamentos(raiz, { editar }) {
       h('span', {}, 'Lançamentos', h('strong', {}, String(itens.length))),
     ]);
     notaTotais.textContent = doMes && compras !== doMes.despesas_centavos
-      ? `Compras lançadas neste mês: ${moeda(compras)} (valor total). As parceladas pesam uma parcela por mês — é o que entra em "Gastos no mês".`
+      ? `Compras lançadas neste mês: ${moeda(compras)} (valor total). "Gastos no mês" soma o que vence neste mês: PIX, débito e boleto do mês + as faturas que vencem neste mês. Compra no crédito entra no mês da fatura (em geral o seguinte), e a parcelada, uma parcela por mês.`
       : '';
 
     // Recusados pelo servidor ficam em destaque, com ações.
