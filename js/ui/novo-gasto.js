@@ -18,6 +18,11 @@
  * as parcelas saem iguais às da loja. Opcionalmente, o preço à vista mostra
  * quanto se paga de juros (e a taxa ao mês).
  *
+ * CARTEIRA DO IPHONE (v1.2 — RF-16): aberta a partir da caixa de entrada,
+ * já vem com valor, data, local e — quando dá — cartão e categoria
+ * sugeridos (js/carteira.js). Ao salvar, o item da caixa é marcado como
+ * lançado (js/sync.js). Sem internet também funciona (vai pela fila).
+ *
  * MODO EDIÇÃO (Fase 3 — RF-41): aberta a partir de Lançamentos com um gasto
  * existente. Mesmo formulário, preenchido; "Salvar alterações" reenvia com o
  * MESMO id (o banco atualiza e regenera as parcelas — RN-17) e "Excluir"
@@ -27,13 +32,15 @@
 import { h, trocar, avisar, vibrar, confirmar } from './dom.js';
 import { teclado, mostradorValor, chips, gradeCategorias, segmentado } from './componentes.js';
 import { calcularParcelas, MAX_PARCELAS, totalPelaParcela, jurosDaCompra } from '../parcelas.js';
-import { moeda, mesAbrev, hojeSP, percentual, lerValorBR, valorParaCampo } from '../formato.js';
+import { moeda, mesAbrev, hojeSP, percentual, lerValorBR, valorParaCampo, dataHoraBR } from '../formato.js';
 import { validarGasto } from '../validacao.js';
 import { iniciarCaptura } from '../geo.js';
 import { enfileirar, listarFila, registrarUsoCategoria, novoId } from '../offline.js';
 import { sincronizar } from '../sync.js';
 import { log } from '../log.js';
-import { estado, categoriasOrdenadas, cartoesAtivos, cartaoPorId, categoriaPorId, nomeMembro } from '../estado.js';
+import { estado, categoriasOrdenadas, cartoesAtivos, cartaoPorId, categoriaPorId, nomeMembro, tomarItemDaCaixa } from '../estado.js';
+import { sugerirGasto, lembrarEscolha } from '../carteira.js';
+import * as db from '../db.js';
 
 const FORMAS = [
   { valor: 'pix', rotulo: 'PIX', icone: '⚡' },
@@ -48,6 +55,11 @@ const FORMAS = [
 const lembrar = {
   ler: (k, padrao) => { try { return localStorage.getItem(`financas-${k}`) ?? padrao; } catch { return padrao; } },
   gravar: (k, v) => { try { localStorage.setItem(`financas-${k}`, v ?? ''); } catch { /* ignora */ } },
+};
+/** v1.2: o que a pessoa escolheu para cada lugar/cartão da Carteira (neste aparelho). */
+const lembrancasCarteira = {
+  ler: () => { try { return JSON.parse(localStorage.getItem('financas-carteira') ?? '{}'); } catch { return {}; } },
+  gravar: (v) => { try { localStorage.setItem('financas-carteira', JSON.stringify(v)); } catch { /* ignora */ } },
 };
 
 /**
@@ -95,6 +107,13 @@ export function montarNovoGasto(raiz, { navegar, edicao = null }) {
     if (original && !lista.some((c) => c.id === original.id)) lista.push(original);
     return lista;
   };
+  // v1.2: veio da caixa de entrada (Carteira do iPhone)? Preenche com a sugestão.
+  const daCaixa = edicao ? null : tomarItemDaCaixa();
+  if (daCaixa) {
+    const sug = sugerirGasto(daCaixa, { cartoes: estado.cartoes, userId: estado.perfil.id, lembrancas: lembrancasCarteira.ler() });
+    Object.assign(s, { centavos: sug.centavos, data: sug.data, localNome: sug.localNome, categoriaId: sug.categoriaId });
+    if (sug.forma) { s.forma = sug.forma; s.cartaoId = sug.cartaoId ?? s.cartaoId; }
+  }
   if (s.cartaoId && !listaCartoes().some((c) => c.id === s.cartaoId)) s.cartaoId = null;
 
   /** Categorias de gasto; na edição inclui a original mesmo se desativada. */
@@ -115,11 +134,13 @@ export function montarNovoGasto(raiz, { navegar, edicao = null }) {
       indisponivel: '📍 sem localização',
     }[situacao];
   };
-  // Na edição, mantém a localização original (não captura de novo).
-  let captura = edicao
+  // Na edição, mantém a localização original (não captura de novo). Compra da
+  // Carteira: a posição de AGORA não é a do lugar da compra — não captura.
+  let captura = daCaixa ? { atual: () => null } : edicao
     ? { atual: () => (edicao.latitude != null ? { latitude: edicao.latitude, longitude: edicao.longitude, precisao: edicao.precisao_metros } : null) }
     : iniciarCaptura(atualizarGeo);
   if (edicao) geoTexto.textContent = edicao.latitude != null ? '📍 localização original mantida' : '📍 sem localização';
+  if (daCaixa) geoTexto.textContent = '📍 sem localização (compra recebida da Carteira)';
 
   // ---- Valor ---------------------------------------------------------------
   const mostrador = mostradorValor();
@@ -311,7 +332,7 @@ export function montarNovoGasto(raiz, { navegar, edicao = null }) {
       longitude: pos?.longitude ?? null,
       precisao_metros: pos?.precisao ?? null,
       local_nome: s.localNome.trim() || null,
-      origem: edicao?.origem ?? 'manual',
+      origem: daCaixa ? 'carteira_iphone' : (edicao?.origem ?? 'manual'),
       // Vínculo com a recorrência que gerou este gasto (se houver) é mantido.
       recorrencia_id: edicao?.recorrencia_id ?? null,
       competencia_recorrencia: edicao?.competencia_recorrencia ?? null,
@@ -319,7 +340,7 @@ export function montarNovoGasto(raiz, { navegar, edicao = null }) {
     };
 
     try {
-      await enfileirar({ tipo: 'despesa', id, user_id: estado.perfil.id, dados, parcelas });
+      await enfileirar({ tipo: 'despesa', id, user_id: estado.perfil.id, dados, parcelas, caixaId: daCaixa?.id ?? null });
     } catch (e) {
       log.erro('gasto', 'Falha ao guardar no aparelho', e);
       avisar('Não foi possível salvar neste aparelho. Tente de novo.', { tipo: 'erro' });
@@ -333,6 +354,15 @@ export function montarNovoGasto(raiz, { navegar, edicao = null }) {
       avisar('Alteração salva ✓', { tipo: 'ok' });
       sincronizar('editar');
       navegar('#/lancamentos');
+      return;
+    }
+    if (daCaixa) {
+      lembrancasCarteira.gravar(lembrarEscolha(lembrancasCarteira.ler(), daCaixa,
+        { forma: s.forma, cartaoId: s.cartaoId, categoriaId: s.categoriaId }));
+      await registrarUsoCategoria(s.categoriaId);
+      avisar(`Lançado ✓ ${moeda(total)}`, { tipo: 'ok' });
+      await sincronizar('caixa');
+      navegar('#/caixa');
       return;
     }
     const aviso = avisar(`Salvo ✓ ${moeda(total)} — enviando…`, { tipo: 'ok', duracao: 4000 });
@@ -389,6 +419,33 @@ export function montarNovoGasto(raiz, { navegar, edicao = null }) {
     navegar('#/lancamentos');
   }
 
+  // ---- Carteira do iPhone (v1.2) -------------------------------------------
+  async function descartarDaCaixa() {
+    if (!(await confirmar(`Descartar a compra de ${moeda(daCaixa.valor_centavos)}${daCaixa.estabelecimento ? ` em ${daCaixa.estabelecimento}` : ''}? Ela não vira gasto.`,
+      { sim: 'Descartar', perigoso: true }))) return;
+    try {
+      await db.marcarCaixa(daCaixa.id, 'descartado');
+      avisar('Compra descartada', { tipo: 'ok' });
+      navegar('#/caixa');
+    } catch (e) {
+      avisar(e.tipo === 'rede' ? 'Sem internet: descarte quando tiver sinal.' : e.message, { tipo: 'erro' });
+    }
+  }
+
+  /** "📥 2 compras da Carteira para lançar ›" — só num gasto novo, com internet. */
+  const bannerCaixa = h('button', { type: 'button', class: 'banner-caixa', hidden: true, onclick: () => navegar('#/caixa') });
+  if (!edicao && !daCaixa && navigator.onLine) {
+    Promise.all([db.listarCaixaPendente(estado.perfil.id), listarFila(estado.perfil.id)])
+      .then(([itens, fila]) => {
+        const naFila = new Set(fila.map((i) => i.caixaId).filter(Boolean));
+        const n = itens.filter((i) => !naFila.has(i.id)).length;
+        if (!n) return;
+        bannerCaixa.textContent = `📥 ${n} compra${n > 1 ? 's' : ''} da Carteira para lançar ›`;
+        bannerCaixa.hidden = false;
+      })
+      .catch((e) => log.info('caixa', 'Caixa de entrada indisponível', { motivo: e.message }));
+  }
+
   // ---- Montagem ------------------------------------------------------------
   trocar(raiz,
     h('section', { class: 'tela-lancamento' },
@@ -396,6 +453,12 @@ export function montarNovoGasto(raiz, { navegar, edicao = null }) {
         edicao ? h('div', { class: 'cabecalho-edicao' },
           h('button', { type: 'button', class: 'link voltar', onclick: () => navegar('#/lancamentos') }, '‹ Lançamentos'),
           h('button', { type: 'button', class: 'link perigo', onclick: excluir }, 'Excluir')) : null,
+        daCaixa ? h('div', { class: 'cabecalho-edicao' },
+          h('button', { type: 'button', class: 'link voltar', onclick: () => navegar('#/caixa') }, '‹ Carteira do iPhone'),
+          h('button', { type: 'button', class: 'link perigo', onclick: descartarDaCaixa }, 'Descartar')) : null,
+        daCaixa ? h('p', { class: 'info-caixa' },
+          `📥 ${daCaixa.estabelecimento ?? 'Compra'} · ${dataHoraBR(daCaixa.recebido_em)}${daCaixa.cartao_nome ? ` · ${daCaixa.cartao_nome}` : ''}`) : null,
+        bannerCaixa,
         mostrador.elemento,
         chipsForma.elemento,
         areaCredito,
@@ -414,6 +477,7 @@ export function montarNovoGasto(raiz, { navegar, edicao = null }) {
   // Na edição, o TECLADO começa com o valor original (senão apagar um
   // dígito partiria do zero). Fica no fim porque atualiza a prévia.
   if (edicao) tec.definir(edicao.valor_total_centavos);
+  if (daCaixa) tec.definir(daCaixa.valor_centavos);
 
   return () => tec.elemento.desligar();
 }

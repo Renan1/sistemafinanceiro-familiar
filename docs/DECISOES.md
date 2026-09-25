@@ -35,7 +35,7 @@ Cada decisão importante fica registrada aqui com **o que** foi decidido e **por
 
 ### D-09 — Segurança em duas camadas (RLS + GRANTs)
 **Decisão:** RLS em todas as tabelas **e** revogação de todos os privilégios do papel `anon`.
-**Por quê:** se um dia alguém criar uma política errada, quem não está logado continua sem acesso. Única exceção: a função `ping()` (não lê dados).
+**Por quê:** se um dia alguém criar uma política errada, quem não está logado continua sem acesso. Exceções: a função `ping()` (não lê dados) e, desde a v1.2, `registrar_compra_atalho()` (D-44), que só insere na caixa de entrada de quem tem a chave e não devolve dados.
 
 ### D-10 — Função `meu_household()` com SECURITY DEFINER
 **Por quê:** as políticas de todas as tabelas precisam saber "qual a família do usuário logado", o que exige ler `profiles`. Se essa leitura passasse pelo RLS de `profiles`, cairia em recursão. A função roda com permissão do dono e devolve só o `household_id` do próprio usuário.
@@ -154,6 +154,14 @@ Cada decisão importante fica registrada aqui com **o que** foi decidido e **por
 ### D-41 — Export para o Claude minimiza dados pessoais
 **Decisão:** o JSON para o Claude leva nomes, valores, categorias e nome do local; **não** leva e-mails, ids internos nem coordenadas GPS. O backup completo (para guardar) leva tudo.
 **Por quê:** a análise não precisa desses dados, e o que vai para uma conversa deve ser o mínimo necessário.
+
+### D-44 — Carteira do iPhone: caixa de entrada + chave pessoal do atalho
+**Decisão:** o Atalho do iPhone (automação "Transação") chama a função `registrar_compra_atalho()` **sem login**, com uma chave pessoal. A compra entra numa **caixa de entrada** e só vira gasto quando a pessoa confirma no app (categoria sugerida). A chave é gerada pelo banco (2 UUIDs aleatórios ≈ 244 bits), mostrada **uma vez** e guardada só como hash SHA-256; pode ser revogada; limite de 30 envios/hora por chave; no máximo 5 chaves ativas por pessoa. O script `007` confere que só `ping()` e `registrar_compra_atalho()` são chamáveis sem login.
+**Por quê:** a Apple não oferece API das transações da Carteira; o Atalhos é o único caminho oficial e não consegue fazer login com e-mail e senha. A caixa de entrada evita gasto errado (sem categoria, valor de estorno) direto no Painel, e a chave limitada a "só inserir na própria caixa" mantém o sistema fechado mesmo se ela vazar — basta revogar.
+
+### D-45 — Gasto da Carteira não usa o GPS do momento
+**Decisão:** ao lançar da caixa de entrada, o app não captura a localização.
+**Por quê:** a pessoa pode lançar horas depois, em outro lugar; a posição de agora poluiria o mapa do Painel. O nome do estabelecimento já vem da Carteira.
 
 ### D-43 — Compra com juros: total = parcela × N, preço à vista opcional
 **Decisão:** no modo "Valor da parcela" o app calcula o total como parcela × N e usa a mesma `calcularParcelas()` — a divisão é exata, então as parcelas saem iguais às da loja. O preço à vista fica numa coluna opcional (`valor_a_vista_centavos`); juros = total − à vista; a taxa ao mês é calculada no app (tabela Price, bisseção).

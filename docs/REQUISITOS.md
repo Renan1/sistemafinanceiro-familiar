@@ -42,6 +42,7 @@ Sistema web (PWA) de controle financeiro familiar. Cada membro registra os **pr�
 | RF-12 | No crédito: escolher cartão e parcelas (1x a 24x), mostrando p.ex. "12x de R$ 83,33 — 1ª em Nov/26". |
 | RF-13 | Natureza **Fixa** ou **Variável**; descrição opcional; data padrão = hoje (editável). |
 | RF-14 | Captura de **localização** ao abrir a tela (não ao salvar). Se negar/falhar/demorar, salva sem localização. Campo opcional "nome do local". |
+| RF-16 | (v1.2) **Carteira do iPhone**: uma automação do app Atalhos ("Transação") envia valor, estabelecimento e cartão de cada compra por aproximação para uma **caixa de entrada** da pessoa; no app, "Lançar" abre o gasto preenchido (cartão e categoria sugeridos, aprendendo com as escolhas anteriores) e "Descartar" remove. A chave do atalho é pessoal, revogável e só consegue inserir na caixa. |
 | RF-15 | (v1.1) No crédito, informar pelo **valor da parcela** (total = parcela × N, parcelas iguais às da loja) e, opcionalmente, o **preço à vista** para mostrar os juros pagos e a taxa ao mês. |
 
 ### 3.2 Ganhos (receitas) — **os ganhos do mês**

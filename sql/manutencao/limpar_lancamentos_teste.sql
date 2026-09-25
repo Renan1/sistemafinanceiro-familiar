@@ -3,11 +3,12 @@
 -- -----------------------------------------------------------------------------
 -- O QUE FAZ
 --   Zera os dados de TESTE para começar o uso real:
---     SEMPRE apaga: gastos, parcelas, ganhos, alertas (insights) e tarefas.
+--     SEMPRE apaga: gastos, parcelas, ganhos, alertas (insights), tarefas e a
+--                   caixa de entrada da Carteira do iPhone (v1.2, se existir).
 --     OPCIONAL (você escolhe na PARTE 2): cartões, recorrências e orçamentos.
 --
 -- O QUE NUNCA APAGA
---   Família, usuários (logins) e categorias. Categorias criadas no teste
+--   Família, usuários (logins), categorias e as chaves do Atalho do iPhone. Categorias criadas no teste
 --   você exclui pelo app: Mais → Categorias.
 --
 -- ⚠️ ATENÇÃO: apaga de verdade, sem volta. Faça antes um "Backup completo"
@@ -78,6 +79,10 @@ begin
   delete from public.receitas;
   delete from public.insights;
   delete from public.tarefas;
+  -- v1.2: caixa de entrada da Carteira (a tabela só existe depois do sql/007).
+  if to_regclass('public.caixa_entrada') is not null then
+    execute 'delete from public.caixa_entrada';
+  end if;
 
   if v_apagar_recorrencias then
     delete from public.recorrencias;
