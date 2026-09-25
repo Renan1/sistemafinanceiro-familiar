@@ -2,6 +2,15 @@
 
 Todas as mudanças relevantes do projeto. Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/), versões em [SemVer](https://semver.org/lang/pt-BR/).
 
+## [1.2.1] — 2026-09-25 — Passo a passo do Atalho com os nomes reais do iOS
+
+### Corrigido
+- Guia (`docs/melhorias-v1.md`) e tela **Mais → Atalho do iPhone**:
+  - a variável é **Entrada do Atalho → Valor**, e não "Quantia";
+  - o cartão vem de **Cartão ou Tiquete**, e não "Cartão ou Passe";
+  - explica que "Entrada do Atalho" fica na faixa acima do teclado, e não em "Selecionar Variável";
+  - validado no iPhone do Renan.
+
 ## [1.2.0] — 2026-09-25 — Compras da Carteira do iPhone direto no app
 
 ### Adicionado

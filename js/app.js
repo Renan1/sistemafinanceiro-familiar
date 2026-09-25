@@ -41,7 +41,7 @@ import { montarCaixa } from './ui/caixa.js';
 import { montarAtalho } from './ui/atalho.js';
 import { reavaliarSeNecessario } from './saude.js';
 
-const VERSAO = '1.2.0';
+const VERSAO = '1.2.1';
 let BUILD = 'local';
 /** URL e chave pública do Supabase (js/config.js) — a tela do Atalho mostra para copiar. */
 let CONFIG_PUBLICA = null;

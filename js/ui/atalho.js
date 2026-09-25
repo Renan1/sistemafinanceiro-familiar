@@ -128,9 +128,10 @@ export function montarAtalho(raiz, { navegar, config }) {
         passo(5, 'Em ', h('strong', {}, 'Corpo da Solicitação'), ' escolha ', h('strong', {}, 'JSON'), ' e adicione 4 campos de texto:',
           h('ul', {},
             h('li', {}, h('code', {}, 'p_token'), ' = sua chave pessoal'),
-            h('li', {}, h('code', {}, 'p_valor'), ' = variável ', h('em', {}, 'Quantia'), ' (da Entrada do Atalho)'),
-            h('li', {}, h('code', {}, 'p_estabelecimento'), ' = variável ', h('em', {}, 'Comerciante')),
-            h('li', {}, h('code', {}, 'p_cartao'), ' = variável ', h('em', {}, 'Cartão ou Passe')))),
+            h('li', {}, h('code', {}, 'p_valor'), ' = Entrada do Atalho → ', h('em', {}, 'Valor')),
+            h('li', {}, h('code', {}, 'p_estabelecimento'), ' = Entrada do Atalho → ', h('em', {}, 'Comerciante')),
+            h('li', {}, h('code', {}, 'p_cartao'), ' = Entrada do Atalho → ', h('em', {}, 'Cartão ou Tiquete'))),
+          h('p', { class: 'dica' }, 'Para inserir: toque no campo do valor → na faixa acima do teclado toque em "Entrada do Atalho" → toque no botão azul que entrou no campo → escolha o item. (Em alguns iOS: "Quantia" e "Cartão ou Passe". Não use "Nome".)')),
         passo(6, 'Concluir. Faça uma compra de teste: ela aparece na caixa de entrada em segundos.')),
       h('p', { class: 'dica' }, 'Os nomes podem variar um pouco conforme a versão do iOS (precisa do iOS 17 ou mais novo). Guia com mais detalhes: docs/melhorias-v1.md.')),
 

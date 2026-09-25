@@ -94,9 +94,17 @@ Precisa do **iOS 17 ou mais novo**.
      | Chave | Valor |
      |---|---|
      | `p_token` | cole a **sua chave pessoal** |
-     | `p_valor` | toque em *Variáveis* → **Entrada do Atalho** → escolha **Quantia** |
+     | `p_valor` | **Entrada do Atalho** → escolha **Valor** |
      | `p_estabelecimento` | **Entrada do Atalho** → **Comerciante** |
-     | `p_cartao` | **Entrada do Atalho** → **Cartão ou Passe** |
+     | `p_cartao` | **Entrada do Atalho** → **Cartão ou Tiquete** |
+
+     **Como inserir a variável** (em cada linha):
+     1. Toque no campo **Valor** da linha (o da direita, não o nome da chave).
+     2. Na faixa **acima do teclado**, toque em **Entrada do Atalho**. Se não aparecer, arraste a faixa para o lado. Ela **não** fica dentro de "Selecionar Variável".
+     3. Um botão azul "Entrada do Atalho" entra no campo. **Toque nele**. Aparece a lista da *Transação* (Cartão ou Tiquete, Comerciante, Valor, Nome); escolha o item da tabela.
+     4. O botão passa a mostrar o nome escolhido (ex.: "Valor").
+
+     > Em algumas versões do iOS os nomes mudam: **Valor** pode aparecer como *Quantia*, e **Cartão ou Tiquete** como *Cartão ou Passe*. Não use **Nome**.
 7. **OK / Concluído.**
 8. **Teste:** pague algo pequeno com a Carteira. Abra o app, e em Gasto deve aparecer "📥 1 compra da Carteira para lançar".
 
@@ -104,7 +112,7 @@ Precisa do **iOS 17 ou mais novo**.
 >
 > Se o atalho der erro, o próprio Atalhos mostra a mensagem do servidor:
 > - *"Chave inválida ou revogada"*: cole a chave de novo ou crie outra.
-> - *"Valor inválido"*: confira se `p_valor` está com a variável **Quantia**.
+> - *"Valor inválido"*: confira se `p_valor` está com a variável **Valor** da Entrada do Atalho.
 
 ### Uso no dia a dia
 - **Gasto** → "📥 N compras da Carteira para lançar" → **Lançar**. Confira a categoria (e o cartão/forma) → **Salvar gasto**. O app volta para a caixa com as próximas.
