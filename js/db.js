@@ -379,3 +379,96 @@ export async function dadosPainel(competencia, { inicio12, fim6, proximaCompeten
   ]);
   return { resumo, parcelas, mapa, orcamentos };
 }
+
+// =============================================================================
+// Saúde financeira (Fase 5 — RF-70 a RF-73)
+// =============================================================================
+
+/** Dados que o motor de regras precisa: 3 meses antes até 3 meses depois. */
+export async function dadosRegras(competencia, { inicio, fim }) {
+  const [resumo, parcelas, orcamentos] = await Promise.all([
+    executar(cliente.from('vw_resumo_mensal').select('*').gte('competencia', inicio).lte('competencia', competencia), 'Regras: resumo'),
+    executar(cliente.from('vw_parcelas_detalhe')
+      .select('user_id, competencia, valor_centavos, categoria_id, categoria_nome, forma_pagamento, total, data_compra')
+      .gte('competencia', inicio).lte('competencia', fim), 'Regras: parcelas'),
+    executar(cliente.from('orcamentos').select('categoria_id, user_id, valor_mensal_centavos'), 'Regras: orçamentos'),
+  ]);
+  return { resumo, parcelas, orcamentos };
+}
+
+/** Troca os alertas do mês de uma vez (sql/005), mantendo os já lidos. */
+export function substituirInsights(competencia, insights) {
+  return executar(cliente.rpc('substituir_insights', { p_competencia: competencia, p_insights: insights }), 'Gravar alertas');
+}
+
+export function listarInsights(competencia) {
+  return executar(cliente.from('insights').select('*').eq('competencia', competencia), 'Listar alertas');
+}
+
+export function marcarInsightsLidos(ids) {
+  return executar(cliente.from('insights').update({ lido: true }).in('id', ids), 'Marcar alertas como lidos');
+}
+
+export function listarTarefas() {
+  return executar(cliente.from('tarefas').select('*').order('status').order('prioridade').order('criada_em', { ascending: false }), 'Listar tarefas');
+}
+
+/**
+ * Cria tarefas. Uma por vez: se uma bater no "já existe tarefa aberta desta
+ * regra" (índice único), as outras seguem normalmente.
+ * @returns {Promise<number>} quantas foram criadas
+ */
+export async function criarTarefas(tarefas) {
+  let criadas = 0;
+  for (const t of tarefas) {
+    try {
+      await executar(cliente.from('tarefas').insert(t), 'Criar tarefa');
+      criadas++;
+    } catch (e) {
+      if (e.codigo !== '23505') throw e; // 23505 = duplicada: ignora
+    }
+  }
+  return criadas;
+}
+
+export function atualizarTarefa(id, campos) {
+  return executar(cliente.from('tarefas').update(campos).eq('id', id), 'Atualizar tarefa');
+}
+
+// =============================================================================
+// Exportação (Fase 5 — RF-80, RF-81)
+// =============================================================================
+
+/** Tudo o que vai no JSON do mês para o Claude (js/exportacao.js). */
+export async function dadosExportacao(competencia, { inicio6, fim12, proxima }) {
+  const noventaDias = new Date(Date.now() - 90 * 864e5).toISOString();
+  const [familia, resumo, lancamentos, parcelas, orcamentos, insights, tarefas] = await Promise.all([
+    executar(cliente.from('households').select('nome').limit(1).maybeSingle(), 'Export: família'),
+    executar(cliente.from('vw_resumo_mensal').select('*').gte('competencia', inicio6).lte('competencia', competencia), 'Export: resumo'),
+    listarLancamentosDoMes(competencia, proxima),
+    executar(cliente.from('vw_parcelas_detalhe').select('user_id, competencia, valor_centavos, categoria_id, forma_pagamento')
+      .gte('competencia', competencia).lte('competencia', fim12), 'Export: parcelas'),
+    executar(cliente.from('orcamentos').select('categoria_id, user_id, valor_mensal_centavos'), 'Export: orçamentos'),
+    listarInsights(competencia),
+    executar(cliente.from('tarefas').select('titulo, descricao, prioridade, status, origem, user_id, concluida_em')
+      .or(`status.eq.aberta,concluida_em.gte."${noventaDias}"`), 'Export: tarefas'),
+  ]);
+  return { familia, resumo, despesas: lancamentos.despesas, receitas: lancamentos.receitas, parcelas, orcamentos, insights, tarefas };
+}
+
+/** Backup completo: todas as tabelas da família, paginando de 1.000 em 1.000. */
+export async function backupCompleto() {
+  const tabelas = ['households', 'profiles', 'categorias', 'cartoes', 'recorrencias', 'despesas', 'parcelas',
+    'receitas', 'orcamentos', 'tarefas', 'insights'];
+  const resultado = {};
+  for (const tabela of tabelas) {
+    const linhas = [];
+    for (let de = 0; ; de += 1000) {
+      const pagina = await executar(cliente.from(tabela).select('*').order('created_at').range(de, de + 999), `Backup: ${tabela}`);
+      linhas.push(...pagina);
+      if (pagina.length < 1000) break;
+    }
+    resultado[tabela] = linhas;
+  }
+  return resultado;
+}

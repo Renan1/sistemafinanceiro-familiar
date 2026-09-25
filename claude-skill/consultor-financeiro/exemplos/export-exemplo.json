@@ -1,0 +1,813 @@
+{
+  "formato": "financas-familia/export@1",
+  "gerado_em": "2026-11-02T09:00:00.000Z",
+  "moeda": "BRL",
+  "valores_em": "centavos (100 = R$ 1,00)",
+  "familia": {
+    "nome": "Família Exemplo",
+    "membros": [
+      "Renan",
+      "Camilla"
+    ]
+  },
+  "periodo": {
+    "competencia": "2026-10-01",
+    "rotulo": "outubro de 2026"
+  },
+  "resumo_mensal": [
+    {
+      "competencia": "2026-05-01",
+      "pessoa": "Camilla",
+      "receitas": 480000,
+      "despesas": 330000,
+      "despesas_fixas": 150000,
+      "despesas_variaveis": 180000,
+      "despesas_cartao": 148500,
+      "saldo": 150000,
+      "taxa_poupanca_pct": 31.3
+    },
+    {
+      "competencia": "2026-05-01",
+      "pessoa": "Família",
+      "receitas": 1230000,
+      "despesas": 850000,
+      "despesas_fixas": 460000,
+      "despesas_variaveis": 390000,
+      "despesas_cartao": 382500,
+      "saldo": 380000,
+      "taxa_poupanca_pct": 30.9
+    },
+    {
+      "competencia": "2026-05-01",
+      "pessoa": "Renan",
+      "receitas": 750000,
+      "despesas": 520000,
+      "despesas_fixas": 310000,
+      "despesas_variaveis": 210000,
+      "despesas_cartao": 234000,
+      "saldo": 230000,
+      "taxa_poupanca_pct": 30.7
+    },
+    {
+      "competencia": "2026-06-01",
+      "pessoa": "Camilla",
+      "receitas": 480000,
+      "despesas": 342000,
+      "despesas_fixas": 150000,
+      "despesas_variaveis": 192000,
+      "despesas_cartao": 153900,
+      "saldo": 138000,
+      "taxa_poupanca_pct": 28.8
+    },
+    {
+      "competencia": "2026-06-01",
+      "pessoa": "Família",
+      "receitas": 1230000,
+      "despesas": 880000,
+      "despesas_fixas": 460000,
+      "despesas_variaveis": 420000,
+      "despesas_cartao": 396000,
+      "saldo": 350000,
+      "taxa_poupanca_pct": 28.5
+    },
+    {
+      "competencia": "2026-06-01",
+      "pessoa": "Renan",
+      "receitas": 750000,
+      "despesas": 538000,
+      "despesas_fixas": 310000,
+      "despesas_variaveis": 228000,
+      "despesas_cartao": 242100,
+      "saldo": 212000,
+      "taxa_poupanca_pct": 28.3
+    },
+    {
+      "competencia": "2026-07-01",
+      "pessoa": "Camilla",
+      "receitas": 480000,
+      "despesas": 354000,
+      "despesas_fixas": 150000,
+      "despesas_variaveis": 204000,
+      "despesas_cartao": 159300,
+      "saldo": 126000,
+      "taxa_poupanca_pct": 26.3
+    },
+    {
+      "competencia": "2026-07-01",
+      "pessoa": "Família",
+      "receitas": 1230000,
+      "despesas": 910000,
+      "despesas_fixas": 460000,
+      "despesas_variaveis": 450000,
+      "despesas_cartao": 409500,
+      "saldo": 320000,
+      "taxa_poupanca_pct": 26
+    },
+    {
+      "competencia": "2026-07-01",
+      "pessoa": "Renan",
+      "receitas": 750000,
+      "despesas": 556000,
+      "despesas_fixas": 310000,
+      "despesas_variaveis": 246000,
+      "despesas_cartao": 250200,
+      "saldo": 194000,
+      "taxa_poupanca_pct": 25.9
+    },
+    {
+      "competencia": "2026-08-01",
+      "pessoa": "Camilla",
+      "receitas": 480000,
+      "despesas": 366000,
+      "despesas_fixas": 150000,
+      "despesas_variaveis": 216000,
+      "despesas_cartao": 164700,
+      "saldo": 114000,
+      "taxa_poupanca_pct": 23.8
+    },
+    {
+      "competencia": "2026-08-01",
+      "pessoa": "Família",
+      "receitas": 1230000,
+      "despesas": 940000,
+      "despesas_fixas": 460000,
+      "despesas_variaveis": 480000,
+      "despesas_cartao": 423000,
+      "saldo": 290000,
+      "taxa_poupanca_pct": 23.6
+    },
+    {
+      "competencia": "2026-08-01",
+      "pessoa": "Renan",
+      "receitas": 750000,
+      "despesas": 574000,
+      "despesas_fixas": 310000,
+      "despesas_variaveis": 264000,
+      "despesas_cartao": 258300,
+      "saldo": 176000,
+      "taxa_poupanca_pct": 23.5
+    },
+    {
+      "competencia": "2026-09-01",
+      "pessoa": "Camilla",
+      "receitas": 480000,
+      "despesas": 378000,
+      "despesas_fixas": 150000,
+      "despesas_variaveis": 228000,
+      "despesas_cartao": 170100,
+      "saldo": 102000,
+      "taxa_poupanca_pct": 21.3
+    },
+    {
+      "competencia": "2026-09-01",
+      "pessoa": "Família",
+      "receitas": 1230000,
+      "despesas": 970000,
+      "despesas_fixas": 460000,
+      "despesas_variaveis": 510000,
+      "despesas_cartao": 436500,
+      "saldo": 260000,
+      "taxa_poupanca_pct": 21.1
+    },
+    {
+      "competencia": "2026-09-01",
+      "pessoa": "Renan",
+      "receitas": 750000,
+      "despesas": 592000,
+      "despesas_fixas": 310000,
+      "despesas_variaveis": 282000,
+      "despesas_cartao": 266400,
+      "saldo": 158000,
+      "taxa_poupanca_pct": 21.1
+    },
+    {
+      "competencia": "2026-10-01",
+      "pessoa": "Camilla",
+      "receitas": 480000,
+      "despesas": 102190,
+      "despesas_fixas": 5590,
+      "despesas_variaveis": 96600,
+      "despesas_cartao": 28990,
+      "saldo": 377810,
+      "taxa_poupanca_pct": 78.7
+    },
+    {
+      "competencia": "2026-10-01",
+      "pessoa": "Família",
+      "receitas": 1230000,
+      "despesas": 544530,
+      "despesas_fixas": 267580,
+      "despesas_variaveis": 276950,
+      "despesas_cartao": 140840,
+      "saldo": 685470,
+      "taxa_poupanca_pct": 55.7
+    },
+    {
+      "competencia": "2026-10-01",
+      "pessoa": "Renan",
+      "receitas": 750000,
+      "despesas": 442340,
+      "despesas_fixas": 261990,
+      "despesas_variaveis": 180350,
+      "despesas_cartao": 111850,
+      "saldo": 307660,
+      "taxa_poupanca_pct": 41
+    }
+  ],
+  "receitas": [
+    {
+      "data": "2026-10-05",
+      "pessoa": "Renan",
+      "categoria": "Salário",
+      "descricao": "Salário",
+      "valor": 750000,
+      "natureza": "fixa",
+      "recorrente": true
+    },
+    {
+      "data": "2026-10-05",
+      "pessoa": "Camilla",
+      "categoria": "Pró-labore",
+      "descricao": "Pró-labore",
+      "valor": 420000,
+      "natureza": "fixa",
+      "recorrente": true
+    },
+    {
+      "data": "2026-10-19",
+      "pessoa": "Camilla",
+      "categoria": "Freelance/Serviços",
+      "descricao": "Projeto extra",
+      "valor": 60000,
+      "natureza": "variavel",
+      "recorrente": false
+    }
+  ],
+  "despesas": [
+    {
+      "data_compra": "2026-10-10",
+      "pessoa": "Renan",
+      "categoria": "Moradia",
+      "descricao": "Aluguel",
+      "valor_total": 250000,
+      "forma_pagamento": "Boleto",
+      "cartao": null,
+      "parcelas": 1,
+      "natureza": "fixa",
+      "recorrente": true,
+      "local": null
+    },
+    {
+      "data_compra": "2026-10-15",
+      "pessoa": "Renan",
+      "categoria": "Contas",
+      "descricao": "Internet",
+      "valor_total": 11990,
+      "forma_pagamento": "Débito",
+      "cartao": null,
+      "parcelas": 1,
+      "natureza": "fixa",
+      "recorrente": true,
+      "local": null
+    },
+    {
+      "data_compra": "2026-10-05",
+      "pessoa": "Camilla",
+      "categoria": "Assinaturas",
+      "descricao": "Streaming",
+      "valor_total": 5590,
+      "forma_pagamento": "Crédito",
+      "cartao": "Itaú Camilla",
+      "parcelas": 1,
+      "natureza": "fixa",
+      "recorrente": true,
+      "local": null
+    },
+    {
+      "data_compra": "2026-10-04",
+      "pessoa": "Renan",
+      "categoria": "Alimentação/Mercado",
+      "descricao": null,
+      "valor_total": 68500,
+      "forma_pagamento": "Débito",
+      "cartao": null,
+      "parcelas": 1,
+      "natureza": "variavel",
+      "recorrente": false,
+      "local": "Supermercado"
+    },
+    {
+      "data_compra": "2026-10-18",
+      "pessoa": "Camilla",
+      "categoria": "Alimentação/Mercado",
+      "descricao": null,
+      "valor_total": 41200,
+      "forma_pagamento": "PIX",
+      "cartao": null,
+      "parcelas": 1,
+      "natureza": "variavel",
+      "recorrente": false,
+      "local": null
+    },
+    {
+      "data_compra": "2026-10-02",
+      "pessoa": "Renan",
+      "categoria": "Restaurante/Delivery",
+      "descricao": "Lanche",
+      "valor_total": 1800,
+      "forma_pagamento": "Crédito",
+      "cartao": "Nubank Renan",
+      "parcelas": 1,
+      "natureza": "variavel",
+      "recorrente": false,
+      "local": null
+    },
+    {
+      "data_compra": "2026-10-03",
+      "pessoa": "Camilla",
+      "categoria": "Restaurante/Delivery",
+      "descricao": "Lanche",
+      "valor_total": 2250,
+      "forma_pagamento": "Crédito",
+      "cartao": "Itaú Camilla",
+      "parcelas": 1,
+      "natureza": "variavel",
+      "recorrente": false,
+      "local": null
+    },
+    {
+      "data_compra": "2026-10-04",
+      "pessoa": "Renan",
+      "categoria": "Restaurante/Delivery",
+      "descricao": "Lanche",
+      "valor_total": 2700,
+      "forma_pagamento": "Crédito",
+      "cartao": "Nubank Renan",
+      "parcelas": 1,
+      "natureza": "variavel",
+      "recorrente": false,
+      "local": null
+    },
+    {
+      "data_compra": "2026-10-05",
+      "pessoa": "Camilla",
+      "categoria": "Restaurante/Delivery",
+      "descricao": "Lanche",
+      "valor_total": 3150,
+      "forma_pagamento": "Crédito",
+      "cartao": "Itaú Camilla",
+      "parcelas": 1,
+      "natureza": "variavel",
+      "recorrente": false,
+      "local": null
+    },
+    {
+      "data_compra": "2026-10-06",
+      "pessoa": "Renan",
+      "categoria": "Restaurante/Delivery",
+      "descricao": "Lanche",
+      "valor_total": 3600,
+      "forma_pagamento": "Crédito",
+      "cartao": "Nubank Renan",
+      "parcelas": 1,
+      "natureza": "variavel",
+      "recorrente": false,
+      "local": null
+    },
+    {
+      "data_compra": "2026-10-07",
+      "pessoa": "Camilla",
+      "categoria": "Restaurante/Delivery",
+      "descricao": "Lanche",
+      "valor_total": 1800,
+      "forma_pagamento": "Crédito",
+      "cartao": "Itaú Camilla",
+      "parcelas": 1,
+      "natureza": "variavel",
+      "recorrente": false,
+      "local": null
+    },
+    {
+      "data_compra": "2026-10-08",
+      "pessoa": "Renan",
+      "categoria": "Restaurante/Delivery",
+      "descricao": "Lanche",
+      "valor_total": 2250,
+      "forma_pagamento": "Crédito",
+      "cartao": "Nubank Renan",
+      "parcelas": 1,
+      "natureza": "variavel",
+      "recorrente": false,
+      "local": null
+    },
+    {
+      "data_compra": "2026-10-09",
+      "pessoa": "Camilla",
+      "categoria": "Restaurante/Delivery",
+      "descricao": "Lanche",
+      "valor_total": 2700,
+      "forma_pagamento": "Crédito",
+      "cartao": "Itaú Camilla",
+      "parcelas": 1,
+      "natureza": "variavel",
+      "recorrente": false,
+      "local": null
+    },
+    {
+      "data_compra": "2026-10-10",
+      "pessoa": "Renan",
+      "categoria": "Restaurante/Delivery",
+      "descricao": "Lanche",
+      "valor_total": 3150,
+      "forma_pagamento": "Crédito",
+      "cartao": "Nubank Renan",
+      "parcelas": 1,
+      "natureza": "variavel",
+      "recorrente": false,
+      "local": null
+    },
+    {
+      "data_compra": "2026-10-11",
+      "pessoa": "Camilla",
+      "categoria": "Restaurante/Delivery",
+      "descricao": "Lanche",
+      "valor_total": 3600,
+      "forma_pagamento": "Crédito",
+      "cartao": "Itaú Camilla",
+      "parcelas": 1,
+      "natureza": "variavel",
+      "recorrente": false,
+      "local": null
+    },
+    {
+      "data_compra": "2026-10-12",
+      "pessoa": "Renan",
+      "categoria": "Restaurante/Delivery",
+      "descricao": "Lanche",
+      "valor_total": 1800,
+      "forma_pagamento": "Crédito",
+      "cartao": "Nubank Renan",
+      "parcelas": 1,
+      "natureza": "variavel",
+      "recorrente": false,
+      "local": null
+    },
+    {
+      "data_compra": "2026-10-13",
+      "pessoa": "Camilla",
+      "categoria": "Restaurante/Delivery",
+      "descricao": "Lanche",
+      "valor_total": 2250,
+      "forma_pagamento": "Crédito",
+      "cartao": "Itaú Camilla",
+      "parcelas": 1,
+      "natureza": "variavel",
+      "recorrente": false,
+      "local": null
+    },
+    {
+      "data_compra": "2026-10-14",
+      "pessoa": "Renan",
+      "categoria": "Restaurante/Delivery",
+      "descricao": "Lanche",
+      "valor_total": 2700,
+      "forma_pagamento": "Crédito",
+      "cartao": "Nubank Renan",
+      "parcelas": 1,
+      "natureza": "variavel",
+      "recorrente": false,
+      "local": null
+    },
+    {
+      "data_compra": "2026-10-15",
+      "pessoa": "Camilla",
+      "categoria": "Restaurante/Delivery",
+      "descricao": "Lanche",
+      "valor_total": 3150,
+      "forma_pagamento": "Crédito",
+      "cartao": "Itaú Camilla",
+      "parcelas": 1,
+      "natureza": "variavel",
+      "recorrente": false,
+      "local": null
+    },
+    {
+      "data_compra": "2026-10-16",
+      "pessoa": "Renan",
+      "categoria": "Restaurante/Delivery",
+      "descricao": "Lanche",
+      "valor_total": 3600,
+      "forma_pagamento": "Crédito",
+      "cartao": "Nubank Renan",
+      "parcelas": 1,
+      "natureza": "variavel",
+      "recorrente": false,
+      "local": null
+    },
+    {
+      "data_compra": "2026-10-17",
+      "pessoa": "Camilla",
+      "categoria": "Restaurante/Delivery",
+      "descricao": "Lanche",
+      "valor_total": 1800,
+      "forma_pagamento": "Crédito",
+      "cartao": "Itaú Camilla",
+      "parcelas": 1,
+      "natureza": "variavel",
+      "recorrente": false,
+      "local": null
+    },
+    {
+      "data_compra": "2026-10-18",
+      "pessoa": "Renan",
+      "categoria": "Restaurante/Delivery",
+      "descricao": "Lanche",
+      "valor_total": 2250,
+      "forma_pagamento": "Crédito",
+      "cartao": "Nubank Renan",
+      "parcelas": 1,
+      "natureza": "variavel",
+      "recorrente": false,
+      "local": null
+    },
+    {
+      "data_compra": "2026-10-19",
+      "pessoa": "Camilla",
+      "categoria": "Restaurante/Delivery",
+      "descricao": "Lanche",
+      "valor_total": 2700,
+      "forma_pagamento": "Crédito",
+      "cartao": "Itaú Camilla",
+      "parcelas": 1,
+      "natureza": "variavel",
+      "recorrente": false,
+      "local": null
+    },
+    {
+      "data_compra": "2026-10-20",
+      "pessoa": "Renan",
+      "categoria": "Lazer",
+      "descricao": "Passagens férias",
+      "valor_total": 360000,
+      "forma_pagamento": "Crédito",
+      "cartao": "Nubank Renan",
+      "parcelas": 6,
+      "natureza": "variavel",
+      "recorrente": false,
+      "local": null
+    },
+    {
+      "data_compra": "2026-10-22",
+      "pessoa": "Camilla",
+      "categoria": "Saúde",
+      "descricao": "Farmácia",
+      "valor_total": 32000,
+      "forma_pagamento": "PIX",
+      "cartao": null,
+      "parcelas": 1,
+      "natureza": "variavel",
+      "recorrente": false,
+      "local": null
+    },
+    {
+      "data_compra": "2026-10-12",
+      "pessoa": "Renan",
+      "categoria": "Transporte/Combustível",
+      "descricao": "Combustível",
+      "valor_total": 28000,
+      "forma_pagamento": "Crédito",
+      "cartao": "Nubank Renan",
+      "parcelas": 1,
+      "natureza": "variavel",
+      "recorrente": false,
+      "local": null
+    }
+  ],
+  "gastos_por_categoria": [
+    {
+      "categoria": "Moradia",
+      "total": 250000,
+      "pct": 45.9
+    },
+    {
+      "categoria": "Alimentação/Mercado",
+      "total": 109700,
+      "pct": 20.1
+    },
+    {
+      "categoria": "Lazer",
+      "total": 60000,
+      "pct": 11
+    },
+    {
+      "categoria": "Restaurante/Delivery",
+      "total": 47250,
+      "pct": 8.7
+    },
+    {
+      "categoria": "Saúde",
+      "total": 32000,
+      "pct": 5.9
+    },
+    {
+      "categoria": "Transporte/Combustível",
+      "total": 28000,
+      "pct": 5.1
+    },
+    {
+      "categoria": "Contas",
+      "total": 11990,
+      "pct": 2.2
+    },
+    {
+      "categoria": "Assinaturas",
+      "total": 5590,
+      "pct": 1
+    }
+  ],
+  "parcelas_futuras": [
+    {
+      "competencia": "2026-11-01",
+      "total": 60000,
+      "por_pessoa": {
+        "Renan": 60000
+      }
+    },
+    {
+      "competencia": "2026-12-01",
+      "total": 60000,
+      "por_pessoa": {
+        "Renan": 60000
+      }
+    },
+    {
+      "competencia": "2027-01-01",
+      "total": 60000,
+      "por_pessoa": {
+        "Renan": 60000
+      }
+    },
+    {
+      "competencia": "2027-02-01",
+      "total": 60000,
+      "por_pessoa": {
+        "Renan": 60000
+      }
+    },
+    {
+      "competencia": "2027-03-01",
+      "total": 60000,
+      "por_pessoa": {
+        "Renan": 60000
+      }
+    },
+    {
+      "competencia": "2027-04-01",
+      "total": 0,
+      "por_pessoa": {}
+    },
+    {
+      "competencia": "2027-05-01",
+      "total": 0,
+      "por_pessoa": {}
+    },
+    {
+      "competencia": "2027-06-01",
+      "total": 0,
+      "por_pessoa": {}
+    },
+    {
+      "competencia": "2027-07-01",
+      "total": 0,
+      "por_pessoa": {}
+    },
+    {
+      "competencia": "2027-08-01",
+      "total": 0,
+      "por_pessoa": {}
+    },
+    {
+      "competencia": "2027-09-01",
+      "total": 0,
+      "por_pessoa": {}
+    },
+    {
+      "competencia": "2027-10-01",
+      "total": 0,
+      "por_pessoa": {}
+    }
+  ],
+  "recorrencias": [
+    {
+      "tipo": "ganho",
+      "descricao": "Salário",
+      "valor": 750000,
+      "dia_do_mes": 5,
+      "categoria": "Salário",
+      "pessoa": "Renan",
+      "forma_pagamento": null,
+      "desde": "2026-01-01",
+      "ate": null,
+      "ativa": true
+    },
+    {
+      "tipo": "ganho",
+      "descricao": "Pró-labore",
+      "valor": 420000,
+      "dia_do_mes": 5,
+      "categoria": "Pró-labore",
+      "pessoa": "Camilla",
+      "forma_pagamento": null,
+      "desde": "2026-01-01",
+      "ate": null,
+      "ativa": true
+    },
+    {
+      "tipo": "gasto",
+      "descricao": "Aluguel",
+      "valor": 250000,
+      "dia_do_mes": 10,
+      "categoria": "Moradia",
+      "pessoa": "Renan",
+      "forma_pagamento": "Boleto",
+      "desde": "2026-01-01",
+      "ate": null,
+      "ativa": true
+    },
+    {
+      "tipo": "gasto",
+      "descricao": "Internet",
+      "valor": 11990,
+      "dia_do_mes": 15,
+      "categoria": "Contas",
+      "pessoa": "Renan",
+      "forma_pagamento": "Débito",
+      "desde": "2026-01-01",
+      "ate": null,
+      "ativa": true
+    },
+    {
+      "tipo": "gasto",
+      "descricao": "Streaming",
+      "valor": 5590,
+      "dia_do_mes": 5,
+      "categoria": "Assinaturas",
+      "pessoa": "Camilla",
+      "forma_pagamento": "Crédito",
+      "desde": "2026-03-01",
+      "ate": null,
+      "ativa": true
+    }
+  ],
+  "orcamentos": [
+    {
+      "categoria": "Alimentação/Mercado",
+      "pessoa": "Família",
+      "orcado": 120000,
+      "realizado": 109700
+    },
+    {
+      "categoria": "Restaurante/Delivery",
+      "pessoa": "Família",
+      "orcado": 30000,
+      "realizado": 47250
+    },
+    {
+      "categoria": "Lazer",
+      "pessoa": "Família",
+      "orcado": 50000,
+      "realizado": 60000
+    }
+  ],
+  "alertas": [
+    {
+      "regra": "ORCAMENTO_CATEGORIA",
+      "severidade": "critico",
+      "mensagem": "Orçamento estourado: Restaurante/Delivery 158%, Lazer 120%.",
+      "pessoa": "Família"
+    },
+    {
+      "regra": "MUITAS_COMPRAS_PEQUENAS",
+      "severidade": "info",
+      "mensagem": "18 compras pequenas (< R$ 30,00) em lanches/delivery somaram R$ 472,50 no mês.",
+      "pessoa": "Família"
+    },
+    {
+      "regra": "REVISAR_ASSINATURAS",
+      "severidade": "info",
+      "mensagem": "Revisão trimestral: 1 assinatura(s) somando R$ 55,90/mês — Streaming.",
+      "pessoa": "Família"
+    }
+  ],
+  "tarefas": [
+    {
+      "titulo": "Segurar gastos em Lazer, Restaurante/Delivery",
+      "descricao": null,
+      "prioridade": 1,
+      "status": "aberta",
+      "origem": "regra",
+      "pessoa": "Família"
+    }
+  ],
+  "instrucoes": "Analise com a Skill \"Consultor Financeiro Familiar\". Devolva as tarefas no formato financas-familia/tarefas@1 para importar no app (Saúde → Importar tarefas do Claude)."
+}

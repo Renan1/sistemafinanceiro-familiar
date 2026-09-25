@@ -18,7 +18,7 @@ PWA (app que roda no navegador e é instalado na Tela de Início do celular) + S
 | 2 | App: login, novo gasto, novo ganho, parcelas, offline, localização, publicação | ✅ v0.2.0 |
 | 3 | Lançamentos, recorrências, cartões, categorias, orçamentos | ✅ v0.3.0 |
 | 4 | Dashboard com conciliação, gráficos e mapa | ✅ v0.4.0 |
-| 5 | Saúde financeira (regras, tarefas), exportação, Skill do Claude | ⏳ próxima |
+| 5 | Saúde financeira (regras, tarefas), exportação, Skill do Claude | ✅ v0.5.0 |
 
 ## Documentação
 
@@ -32,6 +32,8 @@ PWA (app que roda no navegador e é instalado na Tela de Início do celular) + S
 | [docs/fase2-publicacao.md](docs/fase2-publicacao.md) | Publicar no GitHub Pages, subdomínio no Cloudflare, instalar no celular, roteiro de testes |
 | [docs/fase3-cadastros.md](docs/fase3-cadastros.md) | Fase 3: atualizar o banco (004), o que mudou e roteiro de testes |
 | [docs/fase4-painel.md](docs/fase4-painel.md) | Fase 4: como ler o Painel (previsto × realizado, gráficos, mapa) e roteiro de testes |
+| [docs/fase5-saude.md](docs/fase5-saude.md) | Fase 5: atualizar o banco (005), regras, tarefas, exportação, rotina mensal com o Claude |
+| [claude-skill/README.md](claude-skill/README.md) | Skill "Consultor Financeiro Familiar": instalar no Claude e usar todo mês |
 | [docs/CONVENCOES.md](docs/CONVENCOES.md) | Padrão de commits, versões, branches e mudanças no banco |
 | [CHANGELOG.md](CHANGELOG.md) | Histórico de versões |
 
@@ -43,6 +45,13 @@ PWA (app que roda no navegador e é instalado na Tela de Início do celular) + S
    - **GitHub Pages:** Settings → Pages → Source: *GitHub Actions*. O workflow `Publicar app` roda a cada push na `main`.
    - **Cloudflare:** registro `CNAME` `financaspessoais` → `renan1.github.io` (nuvem cinza) + domínio em Settings → Pages + *Enforce HTTPS*.
    - **iPhone:** Safari → Compartilhar → *Adicionar à Tela de Início* → abrir pelo ícone e fazer login.
+
+### Rotina mensal com o Claude
+
+1. App → **Mais → Exportar dados → Gerar JSON do mês** → Compartilhar.
+2. Claude (com a Skill instalada): *"Analise com o Consultor Financeiro Familiar"*.
+3. Copie o bloco de tarefas → App → **Saúde → ✨ Importar tarefas do Claude**.
+4. Gere o **Backup completo** e guarde.
 
 ### Onde ficam a URL e a chave do Supabase?
 
@@ -68,16 +77,21 @@ js/                   código do app
   parcelas.js           calcularParcelas() — regra do cartão
   recorrencias.js       geração automática dos gastos/ganhos fixos
   dashboard.js          cálculos do Painel (previsto × realizado, séries, orçamento)
+  regras.js             motor de regras (limites em LIMITES) · saude.js roda e grava
+  exportacao.js         export JSON (Claude) / CSV e importação de tarefas do Claude
   mapa.js · libs.js     mapa (Leaflet) e carregamento sob demanda de gráficos/mapa
   geo.js · log.js · formato.js · validacao.js · estado.js
-  ui/                   telas (login, gasto, ganho, lançamentos, painel, recorrências, categorias, orçamentos, perfil, mais)
+  ui/                   telas (login, gasto, ganho, lançamentos, painel, saúde, recorrências, categorias, orçamentos, perfil, exportar, mais)
 icons/                ícones do app
 sql/                  scripts do banco — rodar no Supabase, em ordem
   001_schema.sql        estrutura completa + segurança
   002_bootstrap_familia.sql  cria a família e liga os usuários
   003_verificacao.sql   confere se a segurança ficou OK
   004_fase3_recorrencias.sql  alterar valor de recorrência a partir de um mês
+  005_fase5_saude.sql   gravar alertas do mês (mantendo os lidos)
   manutencao/           scripts avulsos (ex.: zerar lançamentos de teste)
+claude-skill/          Skill "Consultor Financeiro Familiar" (SKILL.md, formato, exemplos, MCP)
+scripts/              utilitários (gera o exemplo da Skill com o código do app)
 tests/                testes automáticos (banco e JS — rodam no GitHub Actions)
 docs/                 documentação
 .github/workflows/    testes, publicação no Pages e "manter Supabase ativo"

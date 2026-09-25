@@ -35,8 +35,11 @@ import { montarRecorrencias } from './ui/recorrencias.js';
 import { montarCategorias } from './ui/categorias.js';
 import { montarOrcamentos } from './ui/orcamentos.js';
 import { montarPerfil } from './ui/perfil.js';
+import { montarSaude } from './ui/saude.js';
+import { montarExportar } from './ui/exportar.js';
+import { reavaliarSeNecessario } from './saude.js';
 
-const VERSAO = '0.4.0';
+const VERSAO = '0.5.0';
 let BUILD = 'local';
 
 // ---- Elementos fixos do index.html -----------------------------------------
@@ -57,6 +60,8 @@ const ROTAS = {
   '#/mais/categorias': { titulo: 'Categorias', aba: 'mais', montar: montarCategorias },
   '#/mais/orcamentos': { titulo: 'Orçamentos', aba: 'mais', montar: montarOrcamentos },
   '#/mais/perfil': { titulo: 'Perfil', aba: 'mais', montar: montarPerfil },
+  '#/saude': { titulo: 'Saúde', aba: 'saude', montar: montarSaude },
+  '#/mais/exportar': { titulo: 'Exportar', aba: 'mais', montar: montarExportar },
   // Edição de um lançamento (aberta a partir de Lançamentos).
   '#/editar': { titulo: 'Editar', aba: 'lancamentos', montar: montarEdicao },
 };
@@ -120,7 +125,7 @@ async function iniciar() {
   ouvirFila(atualizarIndicador);
   ouvirSync(atualizarIndicador);
   window.addEventListener('online', atualizarIndicador);
-  window.addEventListener('online', () => gerarRecorrencias());
+  window.addEventListener('online', () => rotinasDeAbertura());
   window.addEventListener('offline', atualizarIndicador);
 
   // 3) Tela inicial sem depender de internet
@@ -128,7 +133,7 @@ async function iniciar() {
   if (temDados && db.situacaoLocal() === 'logado') {
     abrirApp();
     atualizarDoServidor(estado.perfil.id)
-      .then((atualizou) => { if (atualizou) gerarRecorrencias(); })
+      .then((atualizou) => { if (atualizou) rotinasDeAbertura(); })
       .catch(mostrarErroFamilia);
   } else {
     const user = db.situacaoLocal() === 'logado' ? await db.usuarioAtual() : null;
@@ -165,7 +170,32 @@ async function entrouComo(user) {
     return telaErro('Sem conexão', 'Não foi possível baixar seus dados. Verifique a internet e tente de novo.');
   }
   abrirApp();
-  gerarRecorrencias();
+  rotinasDeAbertura();
+}
+
+/**
+ * Rotinas ao abrir o app com internet, NESTA ORDEM:
+ *   1. gerar os lançamentos fixos do mês (recorrências);
+ *   2. sincronizar (para o servidor ter tudo);
+ *   3. avaliar as regras da Saúde (no máximo a cada 6 h) e atualizar o selo.
+ */
+async function rotinasDeAbertura() {
+  await gerarRecorrencias();
+  await sincronizar('abertura-rotinas');
+  await reavaliarSeNecessario();
+  atualizarSelo();
+}
+
+/** Selo na aba Saúde: alertas da família não lidos no mês atual. */
+async function atualizarSelo() {
+  const selo = elAbas.querySelector('a[data-aba="saude"] .selo-aba');
+  if (!selo || !navigator.onLine) return;
+  try {
+    const insights = await db.listarInsights(competenciaDe(hojeSP()));
+    const n = insights.filter((i) => !i.lido && i.user_id == null && i.severidade !== 'info').length;
+    selo.textContent = n ? String(n) : '';
+    selo.hidden = !n;
+  } catch { /* sem selo: não é crítico */ }
 }
 
 /**
@@ -253,7 +283,7 @@ function rotear() {
 
   try {
     limparTelaAtual = rota.montar(elConteudo, {
-      navegar, editar, gerarRecorrencias, aoSair: sairDaConta, versao: VERSAO, build: BUILD,
+      navegar, editar, gerarRecorrencias, aoMudarAlertas: atualizarSelo, aoSair: sairDaConta, versao: VERSAO, build: BUILD,
     });
   } catch (e) {
     log.erro('app', `Erro ao abrir a tela ${location.hash}`, e);
@@ -265,12 +295,15 @@ function montarAbas() {
   const abas = [
     ['gasto', '#/gasto', '➖', 'Gasto'],
     ['ganho', '#/ganho', '➕', 'Ganho'],
-    ['lancamentos', '#/lancamentos', '📋', 'Lançamentos'],
+    ['lancamentos', '#/lancamentos', '📋', 'Lançam.'],
     ['painel', '#/painel', '📊', 'Painel'],
+    ['saude', '#/saude', '🩺', 'Saúde'],
     ['mais', '#/mais', '☰', 'Mais'],
   ];
-  trocar(elAbas, abas.map(([aba, href, icone, texto]) => h('a', { href, dataset: { aba } },
-    h('span', { class: 'aba-icone', 'aria-hidden': 'true' }, icone), h('span', {}, texto))));
+  trocar(elAbas, abas.map(([aba, href, icone, texto]) => h('a', { href, dataset: { aba }, 'aria-label': texto },
+    h('span', { class: 'aba-icone', 'aria-hidden': 'true' }, icone),
+    aba === 'saude' ? h('span', { class: 'selo-aba', hidden: true, 'aria-label': 'alertas não lidos' }) : null,
+    h('span', {}, texto))));
 }
 
 /** Telas sem abas (login, erro). */
