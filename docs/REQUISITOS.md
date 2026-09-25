@@ -149,11 +149,11 @@ Sistema web (PWA) de controle financeiro familiar. Cada membro registra os **pr�
 
 | Código | Critério | Como é verificado |
 |---|---|---|
-| CA-01 | Gasto registrado em modo avião sincroniza sozinho ao reabrir com internet, sem duplicar. | Teste do banco ✅ + teste no navegador ✅ + roteiro no celular (docs/fase2-publicacao.md) |
+| CA-01 | Gasto registrado em modo avião sincroniza sozinho ao reabrir com internet, sem duplicar. | Teste do banco ✅ + teste no navegador ✅ + roteiro no celular ✅ (docs/fase2-publicacao.md) |
 | CA-02 | R$ 1.000,00 em 3x = 333,34 + 333,33 + 333,33 nas faturas corretas. | Teste do banco ✅ + 31 testes JS ✅ + teste no navegador ✅ |
 | CA-03 | Camilla vê o dashboard familiar com os gastos do Renan, mas não consegue editá-los. | Teste do banco ✅ |
-| CA-04 | Negar localização não impede nenhum registro. | Teste no navegador ✅ + roteiro no celular |
-| CA-05 | App abre e registra sem internet após o primeiro acesso. | Teste no navegador ✅ + roteiro no celular |
+| CA-04 | Negar localização não impede nenhum registro. | Teste no navegador ✅ + roteiro no celular ✅ |
+| CA-05 | App abre e registra sem internet após o primeiro acesso. | Teste no navegador ✅ + roteiro no celular ✅ |
 | CA-06 | Quem abre o link sem login não vê nenhum dado. | Teste do banco ✅ |
 
 ## 12. Fases de entrega
@@ -164,4 +164,5 @@ Sistema web (PWA) de controle financeiro familiar. Cada membro registra os **pr�
 | 2 | PWA: login, novo gasto, novo ganho, parcelamento, offline/sincronização, geolocalização, testes de parcelas, publicação no GitHub Pages | v0.2.0 |
 | 3 | Lançamentos, recorrências, cartões, categorias, orçamentos | v0.3.0 |
 | 4 | Dashboard (conciliação, gráficos, mapa) | v0.4.0 |
-| 5 | Motor de regras, tarefas, exportação JSON/CSV, Skill do Claude | v0.5.0 → v1.0.0 |
+| 5 | Motor de regras, tarefas, exportação JSON/CSV, Skill do Claude | v0.5.0 |
+| — | Validação completa no celular pelos dois usuários + manual de operação | **v1.0.0** |

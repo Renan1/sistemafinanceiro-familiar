@@ -3,7 +3,7 @@
 Sistema de controle financeiro pessoal/familiar do Renan e da Camilla.
 PWA (app que roda no navegador e é instalado na Tela de Início do celular) + Supabase (banco na nuvem).
 
-- **Endereço (a partir da Fase 2):** https://financaspessoais.couveflorrefeicoes.com.br
+- **Endereço:** https://financaspessoais.couveflorrefeicoes.com.br
 - **Fechado:** sem login, nada é exibido. Não existe cadastro público.
 - **100% online:** GitHub Pages (app) + Supabase (dados). Nenhum servidor próprio.
 - **Funciona sem sinal:** o gasto fica guardado no celular e sobe sozinho quando a internet volta.
@@ -19,11 +19,13 @@ PWA (app que roda no navegador e é instalado na Tela de Início do celular) + S
 | 3 | Lançamentos, recorrências, cartões, categorias, orçamentos | ✅ v0.3.0 |
 | 4 | Dashboard com conciliação, gráficos e mapa | ✅ v0.4.0 |
 | 5 | Saúde financeira (regras, tarefas), exportação, Skill do Claude | ✅ v0.5.0 |
+| — | **Sistema completo em uso** (validado no celular) + manual de operação | ✅ **v1.0.0** |
 
 ## Documentação
 
 | Documento | Conteúdo |
 |---|---|
+| [docs/OPERACAO.md](docs/OPERACAO.md) | **Uso e manutenção**: rotinas, o que vigiar, quando algo der errado, backup |
 | [docs/REQUISITOS.md](docs/REQUISITOS.md) | **O que** o sistema faz (requisitos numerados RF/RNF/RN, critérios de aceite) |
 | [docs/DECISOES.md](docs/DECISOES.md) | **Por que** cada escolha técnica foi feita |
 | [docs/ARQUITETURA.md](docs/ARQUITETURA.md) | Diagramas, tabelas, fluxo de um gasto, estrutura de pastas |
