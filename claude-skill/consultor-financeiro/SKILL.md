@@ -45,7 +45,7 @@ Faça as contas com cuidado; se usar uma ferramenta de código/análise, use-a p
 Tabela curta (até 6 meses: mês · ganhos · gastos · saldo · poupança) e 1–2 frases sobre a tendência. Se houver menos de 2 meses de histórico, diga isso em vez de forçar tendência.
 
 ### ⚠️ Pontos de atenção
-Até 5 itens, do mais importante ao menos. Cada um com **o número** que o justifica. Considere: gastos > ganhos, orçamentos estourados (`orcamentos[].realizado` vs `orcado`), categorias fora do padrão, peso de parcelas futuras, fixos altos, muitas compras pequenas, assinaturas. Se não houver nada relevante, diga que o mês está saudável — não invente problema.
+Até 5 itens, do mais importante ao menos. Cada um com **o número** que o justifica. Considere: gastos > ganhos, orçamentos estourados (`orcamentos[].realizado` vs `orcado`), categorias fora do padrão, peso de parcelas futuras, fixos altos, muitas compras pequenas, assinaturas, **juros de parcelamento** (`despesas[].juros` — some os juros do mês e diga quanto teria sido economizado pagando à vista). Se não houver nada relevante, diga que o mês está saudável — não invente problema.
 
 ### 💡 Conselhos práticos
 **3 a 5**, numerados por prioridade (1 = fazer primeiro). Cada conselho:

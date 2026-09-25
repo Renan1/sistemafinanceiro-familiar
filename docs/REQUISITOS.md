@@ -42,6 +42,7 @@ Sistema web (PWA) de controle financeiro familiar. Cada membro registra os **pr�
 | RF-12 | No crédito: escolher cartão e parcelas (1x a 24x), mostrando p.ex. "12x de R$ 83,33 — 1ª em Nov/26". |
 | RF-13 | Natureza **Fixa** ou **Variável**; descrição opcional; data padrão = hoje (editável). |
 | RF-14 | Captura de **localização** ao abrir a tela (não ao salvar). Se negar/falhar/demorar, salva sem localização. Campo opcional "nome do local". |
+| RF-15 | (v1.1) No crédito, informar pelo **valor da parcela** (total = parcela × N, parcelas iguais às da loja) e, opcionalmente, o **preço à vista** para mostrar os juros pagos e a taxa ao mês. |
 
 ### 3.2 Ganhos (receitas) — **os ganhos do mês**
 | Código | Requisito |

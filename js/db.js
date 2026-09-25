@@ -237,7 +237,7 @@ export function salvarReceita(dados) {
 export async function listarLancamentosDoMes(competencia, proximaCompetencia) {
   const [despesas, receitas] = await Promise.all([
     executar(cliente.from('despesas')
-      .select('id, user_id, data_compra, valor_total_centavos, descricao, categoria_id, forma_pagamento, cartao_id, qtd_parcelas, natureza, latitude, longitude, precisao_metros, local_nome, observacao, recorrencia_id, competencia_recorrencia, origem')
+      .select('id, user_id, data_compra, valor_total_centavos, descricao, categoria_id, forma_pagamento, cartao_id, qtd_parcelas, natureza, latitude, longitude, precisao_metros, local_nome, observacao, recorrencia_id, competencia_recorrencia, origem, valor_a_vista_centavos')
       .is('excluido_em', null).gte('data_compra', competencia).lt('data_compra', proximaCompetencia)
       .order('data_compra', { ascending: false }).order('created_at', { ascending: false }), 'Listar despesas'),
     executar(cliente.from('receitas')

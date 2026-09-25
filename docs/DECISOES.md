@@ -155,6 +155,10 @@ Cada decisão importante fica registrada aqui com **o que** foi decidido e **por
 **Decisão:** o JSON para o Claude leva nomes, valores, categorias e nome do local; **não** leva e-mails, ids internos nem coordenadas GPS. O backup completo (para guardar) leva tudo.
 **Por quê:** a análise não precisa desses dados, e o que vai para uma conversa deve ser o mínimo necessário.
 
+### D-43 — Compra com juros: total = parcela × N, preço à vista opcional
+**Decisão:** no modo "Valor da parcela" o app calcula o total como parcela × N e usa a mesma `calcularParcelas()` — a divisão é exata, então as parcelas saem iguais às da loja. O preço à vista fica numa coluna opcional (`valor_a_vista_centavos`); juros = total − à vista; a taxa ao mês é calculada no app (tabela Price, bisseção).
+**Por quê:** uma regra de parcelamento só (D-05), sem caso especial no banco nem no Painel; quem não sabe o preço à vista não precisa informar nada. Guardar o à vista (e não os juros) mantém um único dado de origem.
+
 ### D-42 — Seis abas
 **Decisão:** Gasto · Ganho · Lançamentos · Painel · **Saúde** · Mais.
 **Por quê:** a Saúde precisa estar à vista (com o selo de alertas) para cumprir o papel de "tarefas de melhoria"; cabe na largura do iPhone com rótulos curtos.

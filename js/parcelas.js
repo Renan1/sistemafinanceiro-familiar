@@ -16,6 +16,8 @@
  *          seguinte ao fechamento; senão, no mesmo mês do fechamento.
  *          Competência = mês do vencimento. Demais parcelas: +1 mês cada.
  *   RN-15  Dia inexistente no mês (29/30/31) → último dia do mês.
+ *   RF-15  (v1.1) Compra com juros: total = parcela × N (totalPelaParcela)
+ *          e juros/taxa ao mês a partir do preço à vista (jurosDaCompra).
  *
  * Usado por: js/ui/novo-gasto.js (prévia "12x de R$ 83,33 — 1ª em Nov/26")
  *            e js/sync.js (parcelas enviadas junto com a despesa).
@@ -175,4 +177,66 @@ function validarCartao(cartao) {
   if (!cartao || !ok(cartao.dia_fechamento) || !ok(cartao.dia_vencimento)) {
     throw new Error('No crédito é preciso escolher um cartão com dias de fechamento e vencimento válidos.');
   }
+}
+
+// -----------------------------------------------------------------------------
+// Compra parcelada COM JUROS (v1.1 — RF-15)
+// -----------------------------------------------------------------------------
+// Na loja, quem tem juros costuma saber o VALOR DA PARCELA ("12x de R$ 189,90"),
+// não o total. Aqui o total vira parcela × N — assim calcularParcelas() divide
+// sem sobra e as N parcelas saem exatamente iguais à da loja.
+
+/**
+ * Total de uma compra informada pelo valor da parcela.
+ * @param {number} valorParcelaCentavos inteiro > 0
+ * @param {number} qtdParcelas          1 a MAX_PARCELAS
+ * @returns {number} centavos (parcela × N)
+ */
+export function totalPelaParcela(valorParcelaCentavos, qtdParcelas) {
+  if (!Number.isSafeInteger(valorParcelaCentavos) || valorParcelaCentavos <= 0) {
+    throw new Error('O valor da parcela precisa ser maior que zero.');
+  }
+  if (!Number.isInteger(qtdParcelas) || qtdParcelas < 1 || qtdParcelas > MAX_PARCELAS) {
+    throw new Error(`Parcelas devem ser de 1 a ${MAX_PARCELAS}.`);
+  }
+  return valorParcelaCentavos * qtdParcelas;
+}
+
+/**
+ * Juros de uma compra parcelada, comparando com o preço à vista.
+ *
+ * A taxa mensal é a do financiamento com parcelas iguais (tabela Price,
+ * 1ª parcela um mês depois): acha i tal que
+ *     à vista = parcela × (1 − (1 + i)^−N) / i
+ * por bisseção (sem biblioteca, resultado estável).
+ *
+ * @param {object} p
+ * @param {number} p.totalCentavos     total pago (soma das parcelas)
+ * @param {number} p.aVistaCentavos    preço à vista (> 0 e ≤ total)
+ * @param {number} p.qtdParcelas       N
+ * @returns {{jurosCentavos:number, jurosPct:number, taxaMensalPct:number|null}}
+ *          jurosPct = juros sobre o preço à vista (1 casa decimal);
+ *          taxaMensalPct = taxa ao mês (2 casas) ou null se N = 1 ou sem juros.
+ */
+export function jurosDaCompra({ totalCentavos, aVistaCentavos, qtdParcelas }) {
+  if (!Number.isSafeInteger(aVistaCentavos) || aVistaCentavos <= 0) {
+    throw new Error('O preço à vista precisa ser maior que zero.');
+  }
+  if (aVistaCentavos > totalCentavos) {
+    throw new Error('O preço à vista não pode ser maior que o total parcelado.');
+  }
+  const jurosCentavos = totalCentavos - aVistaCentavos;
+  const jurosPct = Math.round(1000 * jurosCentavos / aVistaCentavos) / 10;
+  if (jurosCentavos === 0 || qtdParcelas <= 1) return { jurosCentavos, jurosPct, taxaMensalPct: null };
+
+  const parcela = totalCentavos / qtdParcelas;
+  const valorPresente = (i) => parcela * (1 - (1 + i) ** -qtdParcelas) / i;
+  // valorPresente cai quando i sobe: procura entre ~0% e 100% ao mês.
+  let baixo = 1e-9;
+  let alto = 1;
+  for (let k = 0; k < 100; k++) {
+    const meio = (baixo + alto) / 2;
+    if (valorPresente(meio) > aVistaCentavos) baixo = meio; else alto = meio;
+  }
+  return { jurosCentavos, jurosPct, taxaMensalPct: Math.round(10000 * (baixo + alto) / 2) / 100 };
 }

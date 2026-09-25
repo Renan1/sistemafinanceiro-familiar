@@ -82,6 +82,8 @@ export function montarExport({ competencia, familia, membros, categorias, cartoe
       valor_total: d.valor_total_centavos, forma_pagamento: FORMA[d.forma_pagamento] ?? d.forma_pagamento,
       cartao: cartao(d.cartao_id), parcelas: d.qtd_parcelas, natureza: d.natureza, recorrente: Boolean(d.recorrencia_id),
       local: d.local_nome ?? null,
+      // v1.1: juros pagos (total − preço à vista); null = preço à vista não informado.
+      juros: d.valor_a_vista_centavos ? d.valor_total_centavos - d.valor_a_vista_centavos : null,
     })),
 
     gastos_por_categoria: [...somaCat.entries()]
@@ -139,11 +141,12 @@ export function montarCSV({ despesas, receitas, membros, categorias, cartoes }) 
   const pessoa = (id) => membros.find((m) => m.id === id)?.nome ?? '';
   const categoria = (id) => categorias.find((c) => c.id === id)?.nome ?? '';
   const cartao = (id) => cartoes.find((c) => c.id === id)?.apelido ?? '';
-  const cabecalho = ['tipo', 'data', 'pessoa', 'categoria', 'descricao', 'forma_pagamento', 'cartao', 'parcelas', 'natureza', 'local', 'valor'];
+  const cabecalho = ['tipo', 'data', 'pessoa', 'categoria', 'descricao', 'forma_pagamento', 'cartao', 'parcelas', 'natureza', 'local', 'valor', 'juros'];
   const linhas = [
-    ...receitas.map((r) => ['ganho', r.data, pessoa(r.user_id), categoria(r.categoria_id), r.descricao, '', '', '', r.natureza, '', numero(r.valor_centavos)]),
+    ...receitas.map((r) => ['ganho', r.data, pessoa(r.user_id), categoria(r.categoria_id), r.descricao, '', '', '', r.natureza, '', numero(r.valor_centavos), '']),
     ...despesas.map((d) => ['gasto', d.data_compra, pessoa(d.user_id), categoria(d.categoria_id), d.descricao, FORMA[d.forma_pagamento] ?? d.forma_pagamento,
-      cartao(d.cartao_id), d.qtd_parcelas, d.natureza, d.local_nome, numero(d.valor_total_centavos)]),
+      cartao(d.cartao_id), d.qtd_parcelas, d.natureza, d.local_nome, numero(d.valor_total_centavos),
+      d.valor_a_vista_centavos ? numero(d.valor_total_centavos - d.valor_a_vista_centavos) : '']),
   ].sort((a, b) => String(a[1]).localeCompare(String(b[1])));
   return `﻿${[cabecalho, ...linhas].map((l) => l.map(celula).join(';')).join('\r\n')}\r\n`;
 }

@@ -4,6 +4,21 @@ O sistema está completo. Este guia diz **o que fazer de rotina**, **o que vigia
 
 ---
 
+## 0. Começar o uso real (uma vez)
+
+Os dados de teste (gastos, ganhos, alertas, tarefas e, se quiser, cartões, recorrências e orçamentos) saem com um script. Não precisa apagar nada na mão.
+
+1. Nos **dois celulares**, abra o app com internet e confira **"✓ Tudo sincronizado"** no topo.
+2. (Opcional) **Mais → Exportar dados → Backup completo**, para guardar o teste.
+3. Supabase → **SQL Editor** → cole `sql/manutencao/limpar_lancamentos_teste.sql`:
+   - rode a **PARTE 1** (prévia);
+   - na **PARTE 2**, escolha o que mais apagar (`true`/`false`), troque `v_confirmo` para `true` e rode;
+   - rode a **PARTE 1** de novo: tudo zerado (as categorias ficam).
+4. No app: exclua as **categorias** criadas no teste (Mais → Categorias). Cadastre ou confira os **cartões**, as **recorrências** (salário, aluguel, assinaturas) e os **orçamentos** reais.
+5. Feche e abra o app nos dois celulares. Pronto para os dados reais.
+
+---
+
 ## 1. Rotinas
 
 ### Todo dia (segundos)

@@ -22,7 +22,7 @@ De maio a setembro os gastos subiam cerca de R$ 300 por mês e a poupança caía
 
 ### ⚠️ Pontos de atenção
 1. **Restaurante/Delivery estourou o orçamento**: R$ 472,50 de R$ 300,00 (158%), em **18 compras pequenas** (todas abaixo de R$ 30).
-2. **Lazer passou do orçamento**: R$ 600,00 de R$ 500,00 (120%) — é a 1ª parcela das passagens de férias (R$ 3.600,00 em 6x).
+2. **Lazer passou do orçamento**: R$ 600,00 de R$ 500,00 (120%) — é a 1ª parcela das passagens de férias (R$ 3.600,00 em 6x). Esse parcelamento teve **R$ 300,00 de juros** (à vista seria R$ 3.300,00 — 9,1% a mais, ≈ 2,5% ao mês).
 3. **Parcelas já comprometidas**: R$ 600,00 por mês até março/2027 (R$ 3.000,00 no total). Hoje isso é só 4,9% da renda — tranquilo, mas vale não somar novos parcelamentos grandes enquanto as férias estiverem sendo pagas.
 4. **Mercado perto do limite**: R$ 1.097,00 de R$ 1.200,00 (91%).
 
