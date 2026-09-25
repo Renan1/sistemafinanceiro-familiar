@@ -37,10 +37,14 @@ import { montarOrcamentos } from './ui/orcamentos.js';
 import { montarPerfil } from './ui/perfil.js';
 import { montarSaude } from './ui/saude.js';
 import { montarExportar } from './ui/exportar.js';
+import { montarCaixa } from './ui/caixa.js';
+import { montarAtalho } from './ui/atalho.js';
 import { reavaliarSeNecessario } from './saude.js';
 
-const VERSAO = '1.1.0';
+const VERSAO = '1.2.0';
 let BUILD = 'local';
+/** URL e chave pública do Supabase (js/config.js) — a tela do Atalho mostra para copiar. */
+let CONFIG_PUBLICA = null;
 
 // ---- Elementos fixos do index.html -----------------------------------------
 const elTopo = document.getElementById('topo');
@@ -62,6 +66,8 @@ const ROTAS = {
   '#/mais/perfil': { titulo: 'Perfil', aba: 'mais', montar: montarPerfil },
   '#/saude': { titulo: 'Saúde', aba: 'saude', montar: montarSaude },
   '#/mais/exportar': { titulo: 'Exportar', aba: 'mais', montar: montarExportar },
+  '#/mais/atalho': { titulo: 'Atalho', aba: 'mais', montar: montarAtalho },
+  '#/caixa': { titulo: 'Carteira', aba: 'gasto', montar: montarCaixa },
   // Edição de um lançamento (aberta a partir de Lançamentos).
   '#/editar': { titulo: 'Editar', aba: 'lancamentos', montar: montarEdicao },
 };
@@ -106,6 +112,7 @@ async function iniciar() {
   try {
     ({ CONFIG: config } = await import('./config.js'));
     BUILD = config.build ?? 'local';
+    CONFIG_PUBLICA = { supabaseUrl: config.supabaseUrl, supabaseAnonKey: config.supabaseAnonKey };
   } catch (e) {
     log.erro('app', 'js/config.js não encontrado', e);
     return telaErro('Configuração ausente',
@@ -283,7 +290,7 @@ function rotear() {
 
   try {
     limparTelaAtual = rota.montar(elConteudo, {
-      navegar, editar, gerarRecorrencias, aoMudarAlertas: atualizarSelo, aoSair: sairDaConta, versao: VERSAO, build: BUILD,
+      navegar, editar, gerarRecorrencias, aoMudarAlertas: atualizarSelo, aoSair: sairDaConta, versao: VERSAO, build: BUILD, config: CONFIG_PUBLICA,
     });
   } catch (e) {
     log.erro('app', `Erro ao abrir a tela ${location.hash}`, e);

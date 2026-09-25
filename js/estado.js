@@ -111,3 +111,11 @@ export function membrosOrdenados() {
   const meu = estado.perfil?.id;
   return [...estado.membros].sort((a, b) => (a.id === meu ? -1 : b.id === meu ? 1 : a.nome.localeCompare(b.nome)));
 }
+
+// -----------------------------------------------------------------------------
+// v1.2: item da caixa de entrada (Carteira do iPhone) a lançar na tela de
+// gasto. Passado entre telas: a caixa guarda, a tela de gasto "toma" (uma vez).
+// -----------------------------------------------------------------------------
+let itemDaCaixa = null;
+export function guardarItemDaCaixa(item) { itemDaCaixa = item; }
+export function tomarItemDaCaixa() { const i = itemDaCaixa; itemDaCaixa = null; return i; }

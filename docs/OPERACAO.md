@@ -93,6 +93,7 @@ Para qualquer outra coisa: **Mais → Diagnóstico → Copiar logs** (sem senha 
 - Senhas **só** no gerenciador de senhas. Nada de senha ou chave em arquivos, commits ou prints.
 - A chave `service_role` do Supabase **nunca** vai para o app nem para o GitHub.
 - Não existe cadastro público: um usuário novo só entra se for criado no Supabase **e** ligado à família (`sql/002_bootstrap_familia.sql`).
+- **Atalho do iPhone (v1.2):** a chave pessoal fica só no app Atalhos. Trocou de celular, perdeu o aparelho ou desconfia que vazou? **Mais → Atalho do iPhone → Revogar** e crie outra. Ela só consegue colocar compras na sua caixa de entrada: não lê nada.
 - Trocou de celular? Basta instalar o app de novo e fazer login. Perdeu o celular? Troque a senha em **Mais → Perfil** (ou pelo "Esqueci minha senha" em outro aparelho).
 
 ---

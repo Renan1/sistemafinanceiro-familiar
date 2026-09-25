@@ -84,6 +84,8 @@ erDiagram
 | cartoes, recorrencias | pessoa | a família | só o dono |
 | despesas, parcelas, receitas | pessoa | a família | só o dono |
 | auditoria | — | a família | ninguém (só o banco escreve) |
+| caixa_entrada (v1.2) | pessoa | a família | só o dono (status); inserir só pelo Atalho |
+| atalhos (v1.2) | pessoa | só o dono (sem o hash) | só o dono (revogar); criar só pela função |
 
 ### Views do dashboard
 
@@ -103,6 +105,8 @@ erDiagram
 | `excluir_cartao(cartao)` | Apaga (sem uso) ou arquiva (com histórico) |
 | `alterar_valor_recorrencia(rec, a_partir, valor)` | Novo valor a partir de um mês, preservando histórico (sql/004) |
 | `substituir_insights(competencia, alertas)` | Grava os alertas do mês do motor de regras, mantendo os lidos (sql/005) |
+| `criar_atalho(apelido)` | Cria a chave pessoal do Atalho do iPhone; devolve a chave uma vez, guarda só o hash (sql/007) |
+| `registrar_compra_atalho(token, valor, estabelecimento, cartao)` | **Sem login**, chamada pelo Atalho: põe a compra na caixa de entrada do dono da chave e responde "ok" (sql/007, D-44) |
 | `ping()` | Mantém o Supabase gratuito ativo |
 
 ## Estrutura de pastas
@@ -125,6 +129,7 @@ erDiagram
 │  ├─ regras.js         motor de regras (limites em LIMITES)
 │  ├─ saude.js          roda as regras e grava alertas/tarefas
 │  ├─ exportacao.js     export JSON/CSV e importação de tarefas do Claude
+│  ├─ carteira.js       compra da Carteira do iPhone → sugestão de gasto (v1.2)
 │  ├─ dashboard.js      cálculos do Painel (Fase 4)
 │  ├─ mapa.js · libs.js mapa e bibliotecas sob demanda (Fase 4)
 │  └─ ui/               telas

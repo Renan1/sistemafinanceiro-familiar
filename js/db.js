@@ -436,6 +436,40 @@ export function atualizarTarefa(id, campos) {
 }
 
 // =============================================================================
+// Carteira do iPhone (v1.2 — RF-16): chaves do atalho e caixa de entrada
+// =============================================================================
+
+/** Compras da Carteira ainda não lançadas, da própria pessoa (mais novas primeiro). */
+export function listarCaixaPendente(userId) {
+  return executar(cliente.from('caixa_entrada')
+    .select('id, user_id, recebido_em, valor_centavos, estabelecimento, cartao_nome, status')
+    .eq('user_id', userId).eq('status', 'pendente')
+    .order('recebido_em', { ascending: false }), 'Caixa de entrada');
+}
+
+/** Marca um item da caixa como lançado (com o gasto criado) ou descartado. */
+export function marcarCaixa(id, status, despesaId = null) {
+  return executar(cliente.from('caixa_entrada').update({ status, despesa_id: despesaId }).eq('id', id), 'Atualizar caixa de entrada');
+}
+
+/** Cria uma chave do atalho e devolve o texto dela (só aparece esta vez). */
+export function criarAtalho(apelido) {
+  return executar(cliente.rpc('criar_atalho', { p_apelido: apelido }), 'Criar chave do atalho');
+}
+
+/** Chaves do atalho da própria pessoa (sem o hash, que o app não lê). */
+export function listarAtalhos() {
+  return executar(cliente.from('atalhos')
+    .select('id, apelido, criado_em, ultimo_uso_em, revogado_em')
+    .order('criado_em', { ascending: false }), 'Chaves do atalho');
+}
+
+/** Revoga uma chave: o atalho que a usa para de funcionar na hora. */
+export function revogarAtalho(id) {
+  return executar(cliente.from('atalhos').update({ revogado_em: new Date().toISOString() }).eq('id', id), 'Revogar chave do atalho');
+}
+
+// =============================================================================
 // Exportação (Fase 5 — RF-80, RF-81)
 // =============================================================================
 
@@ -459,12 +493,13 @@ export async function dadosExportacao(competencia, { inicio6, fim12, proxima }) 
 /** Backup completo: todas as tabelas da família, paginando de 1.000 em 1.000. */
 export async function backupCompleto() {
   const tabelas = ['households', 'profiles', 'categorias', 'cartoes', 'recorrencias', 'despesas', 'parcelas',
-    'receitas', 'orcamentos', 'tarefas', 'insights'];
+    'receitas', 'orcamentos', 'tarefas', 'insights', 'caixa_entrada'];
+  const ordem = { caixa_entrada: 'recebido_em' }; // tabelas sem created_at
   const resultado = {};
   for (const tabela of tabelas) {
     const linhas = [];
     for (let de = 0; ; de += 1000) {
-      const pagina = await executar(cliente.from(tabela).select('*').order('created_at').range(de, de + 999), `Backup: ${tabela}`);
+      const pagina = await executar(cliente.from(tabela).select('*').order(ordem[tabela] ?? 'created_at').range(de, de + 999), `Backup: ${tabela}`);
       linhas.push(...pagina);
       if (pagina.length < 1000) break;
     }

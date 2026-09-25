@@ -2,6 +2,38 @@
 
 Todas as mudanças relevantes do projeto. Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/), versões em [SemVer](https://semver.org/lang/pt-BR/).
 
+## [1.2.0] — 2026-09-25 — Compras da Carteira do iPhone direto no app
+
+### Adicionado
+- **Carteira do iPhone**:
+  - uma automação do app **Atalhos** ("Transação") manda valor, estabelecimento e cartão de cada compra por aproximação para a **caixa de entrada** da pessoa;
+  - "📥 N compras da Carteira para lançar" aparece na tela de gasto;
+  - **Lançar** abre o gasto preenchido: valor, data, local, cartão reconhecido pelo nome e categoria lembrada daquele lugar;
+  - **Descartar** tira a compra da caixa.
+- **Mais → Atalho do iPhone**:
+  - cria a chave pessoal, mostrada uma única vez;
+  - endereço e chave pública para copiar;
+  - passo a passo da automação;
+  - lista de chaves com último uso e **Revogar**.
+- `sql/007_v12_carteira_iphone.sql`:
+  - tabelas `atalhos` (só o hash SHA-256 da chave) e `caixa_entrada`, com RLS;
+  - funções `criar_atalho()` e `registrar_compra_atalho()`, esta a única nova liberada sem login, que só insere e responde "ok";
+  - `valor_texto_centavos()`;
+  - origem `carteira_iphone` nos gastos;
+  - conferência de segurança no final.
+- `js/carteira.js`: sugestão de gasto a partir da compra (cartão por dígitos, apelido ou palavra; lembranças por lugar e cartão).
+- Telas `js/ui/caixa.js` e `js/ui/atalho.js`.
+- Gasto lançado sem internet marca a caixa quando o sinal volta (`js/sync.js`).
+- Backup completo inclui a caixa de entrada.
+- A limpeza dos dados de teste também esvazia a caixa de entrada (mantém as chaves).
+- Testes:
+  - 13 JS (`carteira.test.js`);
+  - 29 do banco (leitura de valor, chave, anônimo, RLS, revogar, limite por hora, máximo de chaves);
+  - 10 no navegador, mais a regressão da v1.1 e das Fases 2 a 5.
+
+### Alterado
+- A numeração do plano mudou: a **Carteira do iPhone** virou a v1.2, porque saiu antes. A **importação de extrato** (Itaú e Nubank) passa a ser a v1.3.
+
 ## [1.1.0] — 2026-09-25 — Compra parcelada com juros
 
 ### Adicionado

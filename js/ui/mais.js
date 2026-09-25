@@ -8,6 +8,7 @@
  *   * Diagnóstico: logs do app (RNF-41), situação da fila e do app.
  *   * Sair.
  *   * Exportar (js/ui/exportar.js): JSON para o Claude, CSV e backup.
+ *   * Atalho do iPhone (js/ui/atalho.js): compras da Carteira → caixa de entrada (v1.2).
  * =============================================================================
  */
 import { h, trocar, avisar, confirmar, formularioDialogo } from './dom.js';
@@ -49,6 +50,7 @@ export function montarMais(raiz, { navegar, aoSair, versao }) {
       item('🎯', 'Orçamentos', '#/mais/orcamentos', 'limite mensal por categoria'),
       item('👤', 'Perfil', '#/mais/perfil', 'nome, cor e senha'),
       item('📤', 'Exportar dados', '#/mais/exportar', 'JSON para o Claude, CSV e backup'),
+      item('📲', 'Atalho do iPhone', '#/mais/atalho', 'compras da Carteira direto no app'),
       item('🩺', 'Diagnóstico e logs', '#/mais/diagnostico')),
     h('div', { class: 'menu' },
       h('button', {

@@ -95,7 +95,12 @@ async function executar(motivo) {
   let enviados = 0;
   for (const item of itens) {
     try {
-      if (item.tipo === 'despesa') await db.salvarDespesa(item.dados, item.parcelas);
+      if (item.tipo === 'despesa') {
+        await db.salvarDespesa(item.dados, item.parcelas);
+        // v1.2: gasto lançado da caixa de entrada (Carteira do iPhone) → marca o item.
+        // Se falhar aqui, o item fica na fila e tudo é reenviado (os dois passos são idempotentes).
+        if (item.caixaId) await db.marcarCaixa(item.caixaId, 'lancado', item.id);
+      }
       else if (item.tipo === 'receita') await db.salvarReceita(item.dados);
       else throw Object.assign(new Error(`Tipo desconhecido: ${item.tipo}`), { tipo: 'recusado' });
 
