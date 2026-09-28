@@ -9,7 +9,7 @@ Todas as mudanças relevantes do projeto. Formato baseado em [Keep a Changelog](
   - Agora, se a parcela seguinte da mesma compra já está no app, entra **só a parcela do mês**, com um aviso na prévia.
   - Conferido com as faturas reais, nas duas ordens: os totais de cada mês batem com as faturas.
 - **Atalho do iPhone:** o passo a passo (app e `docs/melhorias-v1.md`) mandava pôr **Cartão ou Tiquete** direto no JSON, o que **trava** o app Atalhos e a compra não chega.
-  - Agora são 3 campos (`p_token`, `p_valor`, `p_estabelecimento`); o cartão é opcional e vai por uma ação **Texto**.
+  - Agora são 3 campos (`p_token`, `p_valor`, `p_estabelecimento`); o cartão vai por uma ação **Texto** (testado no iPhone).
   - Nova dica: **Mostrar Notificação** com o resultado ("ok" ou a mensagem de erro).
 - **Lançamentos:** a nota explica por que "Gastos no mês" pode ser menor que as compras do mês. Ele soma PIX, débito e boleto do mês mais as faturas que vencem no mês. A compra no crédito entra no mês da fatura.
 

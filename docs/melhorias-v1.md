@@ -108,7 +108,7 @@ Precisa do **iOS 17 ou mais novo**.
 
      > ⚠️ **Não coloque "Cartão ou Tiquete" direto no JSON.** Ele não é texto (é o próprio cartão da Carteira), e o Atalhos **trava** ao montar o corpo: a compra não chega e nenhuma mensagem aparece (no iPhone fica só um relatório `BackgroundShortcutRunner` em Ajustes → Privacidade → Análise). Sem o cartão tudo funciona; o app só não sugere o cartão sozinho.
 
-   - **(Opcional) Mandar o cartão:** antes do "Obter Conteúdo da URL", adicione a ação **Texto** e, dentro dela, **Entrada do Atalho** → **Cartão ou Tiquete**. Depois crie no JSON o campo `p_cartao` (tipo Texto) usando a saída **Texto** dessa ação.
+   - **(Recomendado) Mandar o cartão:** antes do "Obter Conteúdo da URL", adicione a ação **Texto** e, dentro dela, **Entrada do Atalho** → **Cartão ou Tiquete**. Depois crie no JSON o campo `p_cartao` (tipo Texto) usando a saída **Texto** dessa ação. Testado no iPhone real: a compra chega com o nome do cartão.
    - **(Recomendado)** No final da automação, adicione **Mostrar Notificação** com a variável **Conteúdo do URL**. A cada compra aparece "ok"; se der erro, a mensagem fica na Central de Notificações.
 7. **OK / Concluído.**
 8. **Teste:** pague algo pequeno com a Carteira. Abra o app, e em Gasto deve aparecer "📥 1 compra da Carteira para lançar".

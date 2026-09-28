@@ -131,7 +131,7 @@ export function montarAtalho(raiz, { navegar, config }) {
             h('li', {}, h('code', {}, 'p_valor'), ' = Entrada do Atalho → ', h('em', {}, 'Valor')),
             h('li', {}, h('code', {}, 'p_estabelecimento'), ' = Entrada do Atalho → ', h('em', {}, 'Comerciante'))),
           h('p', { class: 'dica' }, 'Para inserir: toque no campo do valor → na faixa acima do teclado toque em "Entrada do Atalho" → toque no botão azul que entrou no campo → escolha o item. (Em alguns iOS: "Quantia". Não use "Nome".)'),
-          h('p', { class: 'dica' }, '⚠️ Não coloque "Cartão ou Tiquete" direto no JSON: o Atalhos trava e a compra não chega. Para mandar o cartão (opcional), adicione antes a ação ', h('strong', {}, 'Texto'), ' com Entrada do Atalho → Cartão ou Tiquete e crie o campo ', h('code', {}, 'p_cartao'), ' usando a saída ', h('em', {}, 'Texto'), '.')),
+          h('p', { class: 'dica' }, '⚠️ Não coloque "Cartão ou Tiquete" direto no JSON: o Atalhos trava e a compra não chega. Para mandar o cartão (recomendado: o app já sugere o cartão certo), adicione antes a ação ', h('strong', {}, 'Texto'), ' com Entrada do Atalho → Cartão ou Tiquete e crie o campo ', h('code', {}, 'p_cartao'), ' usando a saída ', h('em', {}, 'Texto'), '.')),
         passo(6, '(Recomendado) No final, adicione ', h('strong', {}, 'Mostrar Notificação'), ' com a variável ', h('em', {}, 'Conteúdo do URL'), '. A cada compra aparece "ok"; se der erro, aparece a mensagem.'),
         passo(7, 'Concluir. Faça uma compra de teste: ela aparece na caixa de entrada em segundos.')),
       h('p', { class: 'dica' }, 'Os nomes podem variar um pouco conforme a versão do iOS (precisa do iOS 17 ou mais novo). Guia com mais detalhes: docs/melhorias-v1.md.')),
