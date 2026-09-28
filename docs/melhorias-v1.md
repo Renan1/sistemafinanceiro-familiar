@@ -90,14 +90,13 @@ Precisa do **iOS 17 ou mais novo**.
 6. Toque na setinha **›** da ação:
    - **Método:** `POST`.
    - **Cabeçalhos:** adicione `apikey` com o valor da *apikey (chave pública do app)* (Copiar no app).
-   - **Corpo da Solicitação:** `JSON`, com 4 campos do tipo **Texto**:
+   - **Corpo da Solicitação:** `JSON`, com 3 campos do tipo **Texto**:
 
      | Chave | Valor |
      |---|---|
      | `p_token` | cole a **sua chave pessoal** |
      | `p_valor` | **Entrada do Atalho** → escolha **Valor** |
      | `p_estabelecimento` | **Entrada do Atalho** → **Comerciante** |
-     | `p_cartao` | **Entrada do Atalho** → **Cartão ou Tiquete** |
 
      **Como inserir a variável** (em cada linha):
      1. Toque no campo **Valor** da linha (o da direita, não o nome da chave).
@@ -106,12 +105,17 @@ Precisa do **iOS 17 ou mais novo**.
      4. O botão passa a mostrar o nome escolhido (ex.: "Valor").
 
      > Em algumas versões do iOS os nomes mudam: **Valor** pode aparecer como *Quantia*, e **Cartão ou Tiquete** como *Cartão ou Passe*. Não use **Nome**.
+
+     > ⚠️ **Não coloque "Cartão ou Tiquete" direto no JSON.** Ele não é texto (é o próprio cartão da Carteira), e o Atalhos **trava** ao montar o corpo: a compra não chega e nenhuma mensagem aparece (no iPhone fica só um relatório `BackgroundShortcutRunner` em Ajustes → Privacidade → Análise). Sem o cartão tudo funciona; o app só não sugere o cartão sozinho.
+
+   - **(Opcional) Mandar o cartão:** antes do "Obter Conteúdo da URL", adicione a ação **Texto** e, dentro dela, **Entrada do Atalho** → **Cartão ou Tiquete**. Depois crie no JSON o campo `p_cartao` (tipo Texto) usando a saída **Texto** dessa ação.
+   - **(Recomendado)** No final da automação, adicione **Mostrar Notificação** com a variável **Conteúdo do URL**. A cada compra aparece "ok"; se der erro, a mensagem fica na Central de Notificações.
 7. **OK / Concluído.**
 8. **Teste:** pague algo pequeno com a Carteira. Abra o app, e em Gasto deve aparecer "📥 1 compra da Carteira para lançar".
 
 > Os nomes dos menus podem variar um pouco conforme a versão do iOS. Se algo não bater, me mande um print da tela do Atalhos.
 >
-> Se o atalho der erro, o próprio Atalhos mostra a mensagem do servidor:
+> Se o atalho der erro, a notificação do passo recomendado mostra a mensagem do servidor:
 > - *"Chave inválida ou revogada"*: cole a chave de novo ou crie outra.
 > - *"Valor inválido"*: confira se `p_valor` está com a variável **Valor** da Entrada do Atalho.
 
