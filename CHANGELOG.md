@@ -2,6 +2,17 @@
 
 Todas as mudanças relevantes do projeto. Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/), versões em [SemVer](https://semver.org/lang/pt-BR/).
 
+## [1.3.2] — 2026-09-25 — Importar uma fatura mais antiga depois da mais nova
+
+### Corrigido
+- **Parcelas duplicadas quando a fatura mais nova entra primeiro:** importar a fatura de outubro e depois a de setembro fazia a "Parcela 9/12" de setembro criar de novo as parcelas de outubro a dezembro, que já existiam.
+  - Agora, se a parcela seguinte da mesma compra já está no app, entra **só a parcela do mês**, com um aviso na prévia.
+  - Conferido com as faturas reais, nas duas ordens: os totais de cada mês batem com as faturas.
+- **Atalho do iPhone:** o passo a passo (app e `docs/melhorias-v1.md`) mandava pôr **Cartão ou Tiquete** direto no JSON, o que **trava** o app Atalhos e a compra não chega.
+  - Agora são 3 campos (`p_token`, `p_valor`, `p_estabelecimento`); o cartão vai por uma ação **Texto** (testado no iPhone).
+  - Nova dica: **Mostrar Notificação** com o resultado ("ok" ou a mensagem de erro).
+- **Lançamentos:** a nota explica por que "Gastos no mês" pode ser menor que as compras do mês. Ele soma PIX, débito e boleto do mês mais as faturas que vencem no mês. A compra no crédito entra no mês da fatura.
+
 ## [1.3.1] — 2026-09-25 — Parcelas na lista, recorrências variáveis e Financiamentos
 
 ### Adicionado

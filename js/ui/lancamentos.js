@@ -40,6 +40,7 @@ export function montarLancamentos(raiz, { editar }) {
   let fila = [];
   let doCache = false;
   let resumoMes = null; // vw_resumo_mensal do mês (igual ao Painel)
+  let resumoDe = null;   // de qual mês é o resumoMes
   let carregando = true;
 
   const titulo = h('h2', { class: 'titulo-mes' });
@@ -102,9 +103,10 @@ export function montarLancamentos(raiz, { editar }) {
   async function carregar() {
     titulo.textContent = mesExtenso(filtros.competencia);
     const competencia = filtros.competencia;
-    resumoMes = null;
+    // Só descarta o resumo ao TROCAR de mês (recarregar o mesmo mês não pisca o card).
+    if (resumoDe !== competencia) { resumoMes = null; resumoDe = competencia; }
     db.resumoDoMes(competencia)
-      .then((linhas) => { if (competencia === filtros.competencia) { resumoMes = linhas; desenhar(); } })
+      .then((linhas) => { if (competencia === filtros.competencia) { resumoMes = linhas; resumoDe = competencia; desenhar(); } })
       .catch(() => { /* sem resumo (offline): os totais usam a lista */ });
     const chaveCache = `lancamentos:${competencia}`;
     carregando = true;
@@ -187,7 +189,7 @@ export function montarLancamentos(raiz, { editar }) {
       h('span', {}, 'Lançamentos', h('strong', {}, String(itens.length))),
     ]);
     notaTotais.textContent = doMes && compras !== doMes.despesas_centavos
-      ? `Compras lançadas neste mês: ${moeda(compras)} (valor total). As parceladas pesam uma parcela por mês — é o que entra em "Gastos no mês".`
+      ? `Compras lançadas neste mês: ${moeda(compras)} (valor total). "Gastos no mês" soma o que vence neste mês: PIX, débito e boleto do mês + as faturas que vencem neste mês. Compra no crédito entra no mês da fatura (em geral o seguinte), e a parcelada, uma parcela por mês.`
       : '';
 
     // Recusados pelo servidor ficam em destaque, com ações.

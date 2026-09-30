@@ -224,6 +224,25 @@ describe('análise da fatura do cartão (Nubank)', async () => {
     assert.equal(s(/Loja Grande - Parcela 2/), 'provavel_duplicado');
     assert.equal(s(/Google One/), 'novo', 'assinatura do mês é compra nova');
   });
+  test('fatura mais ANTIGA importada depois da mais nova: parcela k/N entra só com a parcela do mês (sem duplicar as futuras)', async () => {
+    const arqOut = lerNubankCSV(NUBANK_OUT, 'Nubank_2026-10-14.csv');
+    const out = await analisar({ arquivo: arqOut, userId: U, cartao: nubank, competencia: '2026-10-01', categorias });
+    const gravados = out.filter((i) => i.situacao === 'novo').map((i) => montarLancamento(i, { arquivo: arqOut, perfil, cartao: nubank }));
+    const existentes = {
+      idsExistentes: new Set(gravados.map((g) => g.id)),
+      despesas: gravados.map((g) => g.dados),
+      parcelas: gravados.flatMap((g) => g.parcelas.map((p) => ({ ...p, despesa_id: g.id, cartao_id: g.dados.cartao_id }))),
+    };
+    const set = await analisar({ arquivo, userId: U, cartao: nubank, competencia: '2026-09-01', categorias, existentes });
+    const clube = set.find((i) => /Clube Teste/.test(i.linha.descricao));
+    const grande = set.find((i) => /Loja Grande/.test(i.linha.descricao));
+    assert.equal(clube.situacao, 'novo');
+    assert.deepEqual(clube.parcelas.map((p) => [p.competencia, p.total]), [['2026-09-01', 1]]);
+    assert.match(clube.aviso, /próximas parcelas/);
+    assert.deepEqual(grande.parcelas.map((p) => p.competencia), ['2026-09-01']);
+    const l = montarLancamento(clube, { arquivo, perfil, cartao: nubank });
+    assert.deepEqual([l.dados.qtd_parcelas, l.dados.valor_total_centavos, l.dados.descricao], [1, 1990, 'Clube Teste (9/12)']);
+  });
   test('compra já lançada à mão (ou pela Carteira) no mesmo cartão e valor → "parece já lançado"', async () => {
     const existentes = { despesas: [{ id: 'm1', descricao: 'Google', forma_pagamento: 'credito', data_compra: '2026-08-18' }],
       parcelas: [{ despesa_id: 'm1', cartao_id: 'k-nu', competencia: '2026-08-01', valor_centavos: 999 }] };

@@ -494,6 +494,20 @@ export async function analisar({ arquivo, userId, cartao = null, competencia = n
           || (d.origem === 'recorrencia' && valorBate(d, p.valor_centavos, dias));
       });
       if (achado) return parecido(achado, descDespesa(achado.despesa_id), achado.valor_centavos);
+
+      // Fatura MAIS ANTIGA importada DEPOIS da mais nova (v1.3.2): se a parcela
+      // seguinte desta compra já está no app no mês seguinte, as parcelas
+      // futuras já existem — entra só a parcela deste mês (senão duplicaria).
+      if (linha.parcela && item.parcelas.length > 1) {
+        const proxima = somarMesesCompetencia(competencia, 1);
+        const chave = chaveComerciante(linha.descricao);
+        const seguinte = parcelasExist.find((p) => p.cartao_id === cartao.id && p.competencia === proxima
+          && Math.abs(p.valor_centavos - item.valor) <= 1 && chaveComerciante(descDespesa(p.despesa_id)) === chave);
+        if (seguinte) {
+          item.parcelas = [{ ...item.parcelas[0], total: 1 }];
+          item.aviso = 'As próximas parcelas desta compra já estão no app (de uma fatura mais nova): entra só a parcela deste mês.';
+        }
+      }
     } else if (tipo === 'despesa') {
       const achado = melhor(despesasExist.filter((d) => !usadas.has(d) && d.forma_pagamento !== 'credito'
         && valorBate(d, d.valor_total_centavos, diasEntre(d.data_compra, linha.data))), (d) => d.valor_total_centavos);
@@ -547,7 +561,7 @@ export function montarLancamento(item, { arquivo, perfil, cartao = null, categor
   }
   const parcelas = item.parcelas;
   const total = parcelas.reduce((s, p) => s + p.valor_centavos, 0);
-  const descricao = item.parcela && parcelas.length > 1
+  const descricao = item.parcela && item.parcela.n > 1
     ? `${item.descricao} (${item.parcela.k}/${item.parcela.n})`.slice(0, 120) : item.descricao;
   return {
     tipo: 'despesa', id: item.id, user_id: perfil.id, parcelas,
